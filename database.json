@@ -1,0 +1,53 @@
+{
+  "17472447082569@lid": {
+    "level": 1,
+    "exp": 0,
+    "gold": 131,
+    "bank": 0,
+    "fish": {
+      "kecil": 0,
+      "sedang": 0,
+      "besar": 0,
+      "legend": 0
+    },
+    "hp": 100,
+    "lastRob": 1771800144507,
+    "lastFishing": 0,
+    "lastDungeon": 0,
+    "dungeonEnd": 0,
+    "premium": true,
+    "premiumExpire": 1772404138986,
+    "limit": 30,
+    "lastReset": 1771799401965,
+    "lastCommand": 1771800144506,
+    "spamCount": 0,
+    "shieldUntil": 0,
+    "fishingBoostUntil": 0,
+    "fishingEnd": 1771799594721
+  },
+  "274031966220534@lid": {
+    "level": 1,
+    "exp": 0,
+    "gold": 19,
+    "bank": 30,
+    "fish": {
+      "kecil": 0,
+      "sedang": 0,
+      "besar": 0,
+      "legend": 0
+    },
+    "hp": 100,
+    "lastRob": 1771800009682,
+    "lastFishing": 0,
+    "lastDungeon": 0,
+    "dungeonEnd": 0,
+    "premium": false,
+    "premiumExpire": 0,
+    "limit": 17,
+    "lastReset": 1771798556579,
+    "lastCommand": 1771800420173,
+    "spamCount": 0,
+    "shieldUntil": 0,
+    "fishingBoostUntil": 0
+  }
+}
