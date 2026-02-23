@@ -63,6 +63,7 @@ async function startBot() {
         userData.limit = 30;
       }
       userData.lastReset = now;
+      saveDB();
     }
 
     // ======================
