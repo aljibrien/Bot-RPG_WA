@@ -1,11 +1,11 @@
 import { isRegistered, registerUser } from "../utils.js";
 
 export default async (sock, from, sender) => {
-  if (isRegistered(sender)) {
+  if (await isRegistered(sender)) {
     return sock.sendMessage(from, { text: "Kamu sudah terdaftar." });
   }
 
-  registerUser(sender);
+  await registerUser(sender);
 
   return sock.sendMessage(from, {
     text: "Pendaftaran berhasil.\nKamu dapat 100 gold awal.",

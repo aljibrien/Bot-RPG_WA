@@ -1,51 +1,33 @@
-import { getUser, saveDB, useLimit } from "../utils.js";
-import config from "../config.js";
+import { getUser, saveUser, useLimit } from "../utils.js";
 
 export default async (sock, from, msg, sender, args) => {
-  const mentioned =
+  const target =
     msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
   const amount = parseInt(args[1]);
+  if (!target || !amount || amount <= 0)
+    return sock.sendMessage(from, { text: "Format: .give 100 @tag" });
 
-  if (!mentioned || !amount || amount <= 0) {
-    return sock.sendMessage(from, {
-      text: "Format: .give 1000 @tag",
-    });
-  }
-
-  const giver = getUser(sender);
-  const targetUser = getUser(mentioned);
+  const giver = await getUser(sender);
+  const receiver = await getUser(target);
 
   if (!giver) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!receiver)
+    return sock.sendMessage(from, { text: "Target belum daftar." });
 
-  if (!targetUser)
-    return sock.sendMessage(from, { text: "Target belum terdaftar." });
-
-  // Kalau bukan owner → cek saldo
-  //   if (sender !== config.owner) {
-  //     if (giver.gold < amount) {
-  //       return sock.sendMessage(from, {
-  //         text: "Gold kamu tidak cukup.",
-  //       });
-  //     }
-
-  //     giver.gold -= amount;
-  //   }
-
-  if (giver.gold < amount) {
-    return sock.sendMessage(from, {
-      text: "Gold kamu tidak cukup.",
-    });
-  }
+  if (giver.gold < amount)
+    return sock.sendMessage(from, { text: "Gold tidak cukup." });
 
   giver.gold -= amount;
+  receiver.gold += amount;
 
-  targetUser.gold += amount;
-  useLimit(user);
-  saveDB();
+  useLimit(giver);
+
+  await saveUser(sender, giver);
+  await saveUser(target, receiver);
 
   return sock.sendMessage(from, {
-    text: `@${sender.split("@")[0]} mengirim ${amount} gold ke @${mentioned.split("@")[0]}`,
-    mentions: [sender, mentioned],
+    text: `Transfer ${amount} gold berhasil.`,
+    mentions: [sender, target],
   });
 };

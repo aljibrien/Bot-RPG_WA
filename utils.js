@@ -1,87 +1,87 @@
-import fs from "fs";
+import supabase from "./supabase.js";
 
-const DB_FILE = "./database.json";
+// ========================
+// CHECK REGISTER
+// ========================
+async function isRegistered(id) {
+  const { data } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", id)
+    .single();
 
-let db = {};
-
-if (fs.existsSync(DB_FILE)) {
-  try {
-    const raw = fs.readFileSync(DB_FILE, "utf8");
-    db = raw ? JSON.parse(raw) : {};
-  } catch {
-    db = {};
-  }
+  return !!data;
 }
 
-function saveDB() {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-}
-
-function isRegistered(id) {
-  return !!db[id];
-}
-
-function registerUser(id) {
-  db[id] = {
+// ========================
+// REGISTER USER
+// ========================
+async function registerUser(id) {
+  const { error } = await supabase.from("users").insert({
+    id,
     level: 1,
     exp: 0,
     gold: 100,
     bank: 0,
-    fish: {
-      kecil: 0,
-      sedang: 0,
-      besar: 0,
-      legend: 0,
-    },
+
+    kecil: 0,
+    sedang: 0,
+    besar: 0,
+    legend: 0,
+
     hp: 100,
 
-    lastRob: 0,
-    lastFishing: 0,
-    lastDungeon: 0,
-
-    dungeonEnd: 0,
+    lastrob: 0,
+    lastfishing: 0,
+    lastdungeon: 0,
+    dungeonend: 0,
 
     premium: false,
-    premiumExpire: 0,
+    premiumexpire: 0,
 
     limit: 30,
-    lastReset: 0,
-    lastCommand: 0,
-    spamCount: 0,
+    lastreset: 0,
+    lastcommand: 0,
+    spamcount: 0,
 
-    shieldUntil: 0,
-    fishingBoostUntil: 0,
-  };
+    shielduntil: 0,
+    fishingboostuntil: 0,
+    fishingend: 0,
+  });
 
-  saveDB();
+  if (error) console.error(error);
 }
 
-function getUser(id) {
-  const user = db[id];
-  if (!user) return null;
+// ========================
+// GET USER
+// ========================
+async function getUser(id) {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  // 🔥 Normalisasi fish jika database lama rusak
-  if (!user.fish || typeof user.fish !== "object") {
-    user.fish = {
-      kecil: 0,
-      sedang: 0,
-      besar: 0,
-      legend: 0,
-    };
-  }
-
-  // 🔥 Pastikan field baru selalu ada
-  if (!user.dungeonEnd) user.dungeonEnd = 0;
-  if (!user.shieldUntil) user.shieldUntil = 0;
-  if (!user.fishingBoostUntil) user.fishingBoostUntil = 0;
-
-  return user;
+  if (error) return null;
+  return data;
 }
 
+// ========================
+// SAVE USER
+// ========================
+async function saveUser(id, user) {
+  const { error } = await supabase.from("users").update(user).eq("id", id);
+
+  if (error) console.error(error);
+}
+
+// ========================
+// PREMIUM CHECK
+// ========================
 function isPremium(user) {
   if (!user.premium) return false;
 
-  if (Date.now() > user.premiumExpire) {
+  if (Date.now() > user.premiumexpire) {
     user.premium = false;
     return false;
   }
@@ -89,6 +89,9 @@ function isPremium(user) {
   return true;
 }
 
+// ========================
+// LEVEL SYSTEM
+// ========================
 function checkLevelUp(user) {
   let requiredExp = user.level * 100;
 
@@ -99,6 +102,9 @@ function checkLevelUp(user) {
   }
 }
 
+// ========================
+// LIMIT SYSTEM
+// ========================
 function useLimit(user) {
   if (!isPremium(user)) {
     user.limit--;
@@ -106,11 +112,10 @@ function useLimit(user) {
 }
 
 export {
-  db,
-  saveDB,
   isRegistered,
   registerUser,
   getUser,
+  saveUser,
   isPremium,
   checkLevelUp,
   useLimit,

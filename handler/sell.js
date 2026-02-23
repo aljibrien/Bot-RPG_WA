@@ -1,6 +1,6 @@
-import { getUser, saveDB, useLimit } from "../utils.js";
+import { getUser, saveUser, useLimit } from "../utils.js";
 
-const priceList = {
+const price = {
   kecil: 10,
   sedang: 25,
   besar: 50,
@@ -8,74 +8,55 @@ const priceList = {
 };
 
 export default async (sock, from, sender, args) => {
-  const user = getUser(sender);
+  const user = await getUser(sender);
   if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
   const type = args[1]?.toLowerCase();
 
-  // =========================
-  // SELL ALL
-  // =========================
   if (type === "all") {
-    const { kecil, sedang, besar, legend } = user.fish;
-
-    const totalFish = kecil + sedang + besar + legend;
+    const totalFish = user.kecil + user.sedang + user.besar + user.legend;
 
     if (totalFish <= 0)
       return sock.sendMessage(from, { text: "Ikan kamu kosong." });
 
     const total =
-      kecil * priceList.kecil +
-      sedang * priceList.sedang +
-      besar * priceList.besar +
-      legend * priceList.legend;
+      user.kecil * price.kecil +
+      user.sedang * price.sedang +
+      user.besar * price.besar +
+      user.legend * price.legend;
 
     user.gold += total;
+    user.kecil = 0;
+    user.sedang = 0;
+    user.besar = 0;
+    user.legend = 0;
 
-    user.fish = {
-      kecil: 0,
-      sedang: 0,
-      besar: 0,
-      legend: 0,
-    };
     useLimit(user);
-    saveDB();
+    await saveUser(sender, user);
 
     return sock.sendMessage(from, {
-      text: `Semua ikan terjual!
-+${total} gold`,
+      text: `Semua ikan terjual!\n+${total} gold`,
     });
   }
 
-  // =========================
-  // SELL SPESIFIK
-  // =========================
   const amount = parseInt(args[2]);
-
-  if (!priceList[type])
-    return sock.sendMessage(from, {
-      text: "Tipe ikan salah. Gunakan: kecil / sedang / besar / legend",
-    });
+  if (!price[type]) return sock.sendMessage(from, { text: "Tipe ikan salah." });
 
   if (!amount || amount <= 0)
-    return sock.sendMessage(from, {
-      text: "Masukkan jumlah yang valid.",
-    });
+    return sock.sendMessage(from, { text: "Jumlah tidak valid." });
 
-  if (user.fish[type] < amount)
-    return sock.sendMessage(from, {
-      text: `Ikan ${type} kamu tidak cukup.`,
-    });
+  if (user[type] < amount)
+    return sock.sendMessage(from, { text: `Ikan ${type} tidak cukup.` });
 
-  const total = amount * priceList[type];
+  const total = amount * price[type];
 
-  user.fish[type] -= amount;
+  user[type] -= amount;
   user.gold += total;
+
   useLimit(user);
-  saveDB();
+  await saveUser(sender, user);
 
   return sock.sendMessage(from, {
-    text: `Berhasil menjual ${amount} ikan ${type}.
-+${total} gold`,
+    text: `Berhasil menjual ${amount} ${type}\n+${total} gold`,
   });
 };

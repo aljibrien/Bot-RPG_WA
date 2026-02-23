@@ -1,8 +1,10 @@
 import makeWASocket, { useMultiFileAuthState } from "@whiskeysockets/baileys";
 import P from "pino";
+import "dotenv/config";
 import config from "./config.js";
 import qrcode from "qrcode-terminal";
-import { isRegistered, getUser, isPremium, saveDB } from "./utils.js";
+
+import { isRegistered, getUser, saveUser, isPremium } from "./utils.js";
 
 import register from "./handler/register.js";
 import fish from "./handler/fish.js";
@@ -26,119 +28,123 @@ async function startBot() {
   sock.ev.on("creds.update", saveCreds);
 
   sock.ev.on("messages.upsert", async ({ messages }) => {
-    const msg = messages[0];
-    if (!msg.message) return;
-    if (msg.key.fromMe) return;
+    try {
+      const msg = messages[0];
+      if (!msg?.message) return;
+      if (msg.key.fromMe) return;
 
-    const from = msg.key.remoteJid;
-    const isGroup = from.endsWith("@g.us");
-    const sender = isGroup ? msg.key.participant : from;
+      const from = msg.key.remoteJid;
+      const isGroup = from.endsWith("@g.us");
+      const sender = isGroup ? msg.key.participant : from;
 
-    const text =
-      msg.message.conversation || msg.message.extendedTextMessage?.text;
+      const text =
+        msg.message.conversation || msg.message.extendedTextMessage?.text;
 
-    if (!text?.startsWith(config.prefix)) return;
+      if (!text?.startsWith(config.prefix)) return;
 
-    const args = text.trim().split(/\s+/);
-    const command = args[0].slice(1).toLowerCase();
+      const args = text.trim().split(/\s+/);
+      const command = args[0].slice(1).toLowerCase();
 
-    // ======================
-    // WAJIB DAFTAR
-    // ======================
-    if (command !== "daftar" && !isRegistered(sender)) {
-      return sock.sendMessage(from, {
-        text: "Kamu belum terdaftar. Ketik .daftar dulu.",
-      });
-    }
-
-    const userData = getUser(sender);
-    const now = Date.now();
-    const oneDay = 86400000;
-
-    // ======================
-    // RESET LIMIT HARIAN
-    // ======================
-    if (userData && now - userData.lastReset > oneDay) {
-      if (!isPremium(userData)) {
-        userData.limit = 30;
-      }
-      userData.lastReset = now;
-      saveDB();
-    }
-
-    // ======================
-    // LIMIT & PREMIUM
-    // ======================
-    if (userData && !["daftar", "help", "lb", "shop", "me"].includes(command)) {
-      if (!isPremium(userData)) {
-        if (userData.limit <= 0) {
-          return sock.sendMessage(from, {
-            text: "Limit harian habis. Upgrade premium.",
-          });
-        }
-      }
-    }
-
-    // ======================
-    // ANTI SPAM
-    // ======================
-    if (userData) {
-      if (now - userData.lastCommand < 1000) {
-        userData.spamCount++;
-        if (userData.spamCount >= 5) {
-          return sock.sendMessage(from, {
-            text: "Spam terdeteksi. Pelan-pelan.",
-          });
-        }
-      } else {
-        userData.spamCount = 0;
-      }
-
-      userData.lastCommand = now;
-      saveDB();
-    }
-
-    // ======================
-    // ROUTING COMMAND
-    // ======================
-    switch (command) {
-      case "daftar":
-        return register(sock, from, sender);
-
-      case "fish":
-      case "mancing":
-        return fish(sock, from, sender);
-
-      case "dungeon":
-        return dungeon(sock, from, sender);
-
-      case "rob":
-        return rob(sock, from, msg, sender);
-
-      case "deposit":
-        return bank(sock, from, sender, args, "deposit");
-
-      case "withdraw":
-        return bank(sock, from, sender, args, "withdraw");
-
-      case "me":
-        return user(sock, from, sender);
-
-      case "lb":
-        return leaderboard(sock, from);
-
-      case "shop":
-        return shop(sock, from, sender, args);
-
-      case "give":
-        return give(sock, from, msg, sender, args);
-
-      case "sell":
-        return sell(sock, from, sender, args);
-
-      case "help":
+      // ======================
+      // WAJIB DAFTAR
+      // ======================
+      if (command !== "daftar" && !(await isRegistered(sender))) {
         return sock.sendMessage(from, {
-          text: `List Command:
+          text: "Kamu belum terdaftar. Ketik .daftar dulu.",
+        });
+      }
+
+      const userData = await getUser(sender);
+      const now = Date.now();
+      const oneDay = 86400000;
+
+      // ======================
+      // RESET LIMIT HARIAN
+      // ======================
+      if (userData && now - userData.lastreset > oneDay) {
+        if (!isPremium(userData)) {
+          userData.limit = 30;
+        }
+        userData.lastreset = now;
+        await saveUser(sender, userData);
+      }
+
+      // ======================
+      // LIMIT CHECK (no auto minus di sini!)
+      // ======================
+      if (
+        userData &&
+        !["daftar", "help", "lb", "shop", "me"].includes(command)
+      ) {
+        if (!isPremium(userData)) {
+          if (userData.limit <= 0) {
+            return sock.sendMessage(from, {
+              text: "Limit harian habis. Upgrade premium.",
+            });
+          }
+        }
+      }
+
+      // ======================
+      // ANTI SPAM
+      // ======================
+      if (userData) {
+        if (now - userData.lastcommand < 1000) {
+          userData.spamcount++;
+          if (userData.spamcount >= 5) {
+            return sock.sendMessage(from, {
+              text: "Spam terdeteksi. Pelan-pelan.",
+            });
+          }
+        } else {
+          userData.spamcount = 0;
+        }
+
+        userData.lastcommand = now;
+        await saveUser(sender, userData);
+      }
+
+      // ======================
+      // ROUTING COMMAND
+      // ======================
+      switch (command) {
+        case "daftar":
+          return register(sock, from, sender);
+
+        case "fish":
+        case "mancing":
+          return fish(sock, from, sender);
+
+        case "dungeon":
+          return dungeon(sock, from, sender);
+
+        case "rob":
+          return rob(sock, from, msg, sender);
+
+        case "deposit":
+          return bank(sock, from, sender, args, "deposit");
+
+        case "withdraw":
+          return bank(sock, from, sender, args, "withdraw");
+
+        case "me":
+          return user(sock, from, sender);
+
+        case "lb":
+          return leaderboard(sock, from);
+
+        case "shop":
+          return shop(sock, from, sender, args);
+
+        case "give":
+          return give(sock, from, msg, sender, args);
+
+        case "sell":
+          return sell(sock, from, sender, args);
+
+        case "help":
+          return sock.sendMessage(from, {
+            text: `List Command:
 ⚡︎ .daftar
 ──── ୨୧ Minigames ୨୧ ────
 ╰┈➤ .fish
@@ -149,64 +155,70 @@ async function startBot() {
 ╰┈➤ .withdraw 100
 ╰┈➤ .sell kecil 10 (jual ikan sebagian)
 ╰┈➤ .sell all (jual ikan semuanya)
+╰┈➤ .shop
 ──── ୨୧ User ୨୧ ────
 ╰┈➤ .me
 ╰┈➤ .give @tag
 ╰┈➤ .lb (leaderboard)`,
-        });
+          });
 
-      case "addprem":
-        if (sender !== config.owner) return;
+        case "addprem": {
+          if (sender !== config.owner) return;
 
-        let days;
-        let target;
+          let days;
+          let target;
 
-        // Cek apakah ada mention
-        const mentioned =
-          msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+          const mentioned =
+            msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
-        if (mentioned) {
-          // Format: .addprem 30 @tag
-          days = parseInt(args[1]);
-          target = mentioned;
-        } else {
-          // Format: .addprem 08xxxx 30
-          const number = args[1];
-          days = parseInt(args[2]);
+          if (mentioned) {
+            days = parseInt(args[1]);
+            target = mentioned;
+          } else {
+            const number = args[1];
+            days = parseInt(args[2]);
 
-          if (!number || !days) {
-            return sock.sendMessage(from, {
-              text: "Format:\n.addprem 30 @tag\natau\n.addprem 08xxxx 30",
-            });
+            if (!number || !days) {
+              return sock.sendMessage(from, {
+                text: "Format:\n.addprem 30 @tag\natau\n.addprem 08xxxx 30",
+              });
+            }
+
+            const formatted = number.replace(/^0/, "62");
+            target = formatted + "@s.whatsapp.net";
           }
 
-          const formatted = number.replace(/^0/, "62");
-          target = formatted + "@s.whatsapp.net";
+          if (!days || days <= 0)
+            return sock.sendMessage(from, {
+              text: "Jumlah hari tidak valid.",
+            });
+
+          const targetUser = await getUser(target);
+          if (!targetUser)
+            return sock.sendMessage(from, {
+              text: "User belum terdaftar.",
+            });
+
+          targetUser.premium = true;
+          targetUser.premiumexpire = Date.now() + days * 86400000;
+
+          await saveUser(target, targetUser);
+
+          return sock.sendMessage(from, {
+            text: `Premium ${days} hari berhasil diberikan.`,
+          });
         }
 
-        if (!days || days <= 0)
-          return sock.sendMessage(from, { text: "Jumlah hari tidak valid." });
-
-        const targetUser = getUser(target);
-        if (!targetUser)
-          return sock.sendMessage(from, { text: "User belum terdaftar." });
-
-        targetUser.premium = true;
-        targetUser.premiumExpire = Date.now() + days * 86400000;
-
-        saveDB();
-
-        return sock.sendMessage(from, {
-          text: `Premium ${days} hari berhasil diberikan.`,
-        });
-
-      default:
-        return;
+        default:
+          return;
+      }
+    } catch (err) {
+      console.error("ERROR:", err);
     }
   });
 
   sock.ev.on("connection.update", (update) => {
-    const { connection, qr, lastDisconnect } = update;
+    const { connection, qr } = update;
 
     if (qr) {
       qrcode.generate(qr, { small: true });

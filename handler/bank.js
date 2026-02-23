@@ -1,7 +1,7 @@
-import { getUser, saveDB, useLimit } from "../utils.js";
+import { getUser, saveUser, useLimit } from "../utils.js";
 
 export default async (sock, from, sender, args, type) => {
-  const user = getUser(sender);
+  const user = await getUser(sender);
   if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
   const amount = parseInt(args[1]);
@@ -14,10 +14,6 @@ export default async (sock, from, sender, args, type) => {
 
     user.gold -= amount;
     user.bank += amount;
-    useLimit(user);
-    saveDB();
-
-    return sock.sendMessage(from, { text: `Deposit ${amount} gold.` });
   }
 
   if (type === "withdraw") {
@@ -26,9 +22,10 @@ export default async (sock, from, sender, args, type) => {
 
     user.bank -= amount;
     user.gold += amount;
-    useLimit(user);
-    saveDB();
-
-    return sock.sendMessage(from, { text: `Withdraw ${amount} gold.` });
   }
+
+  useLimit(user);
+  await saveUser(sender, user);
+
+  return sock.sendMessage(from, { text: `${type} ${amount} gold berhasil.` });
 };

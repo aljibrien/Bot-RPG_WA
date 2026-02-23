@@ -1,18 +1,18 @@
-import { getUser, saveDB } from "../utils.js";
+import { getUser, saveUser } from "../utils.js";
 
 export default async (sock, from, sender, args) => {
-  const user = getUser(sender);
-  if (!user) return;
+  const user = await getUser(sender);
+  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
-  const item = args[1];
+  const item = args[1]?.toLowerCase();
 
   if (!item) {
     return sock.sendMessage(from, {
       text: `🛒 SHOP LIST:
-.limit - 150 gold (+5 limit)
-.shield - 350 gold (anti rob 1 jam)
-.heal - 100 gold (+50 HP)
-.dungeon - 200 gold (reset cooldown)`,
+.shop limit - 150 gold (+5 limit)
+.shop shield - 350 gold (anti rob 1 jam)
+.shop heal - 100 gold (+50 HP)
+.shop dungeon - 50 gold (reset cooldown)`,
     });
   }
 
@@ -27,7 +27,7 @@ export default async (sock, from, sender, args) => {
       return sock.sendMessage(from, { text: "Gold tidak cukup." });
 
     user.gold -= 350;
-    user.shieldUntil = Date.now() + 3600000;
+    user.shielduntil = Date.now() + 3600000;
   } else if (item === "heal") {
     if (user.gold < 100)
       return sock.sendMessage(from, { text: "Gold tidak cukup." });
@@ -35,17 +35,16 @@ export default async (sock, from, sender, args) => {
     user.gold -= 100;
     user.hp += 50;
   } else if (item === "dungeon") {
-    if (user.gold < 200)
+    if (user.gold < 50)
       return sock.sendMessage(from, { text: "Gold tidak cukup." });
 
-    user.gold -= 200;
-    user.lastDungeon = 0;
+    user.gold -= 50;
+    user.lastdungeon = 0;
   } else {
     return sock.sendMessage(from, { text: "Item tidak ditemukan." });
   }
 
-  saveDB();
-  return sock.sendMessage(from, {
-    text: `Pembelian ${item} berhasil.`,
-  });
+  await saveUser(sender, user);
+
+  return sock.sendMessage(from, { text: `Pembelian ${item} berhasil.` });
 };

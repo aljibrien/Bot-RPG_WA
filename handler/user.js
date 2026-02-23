@@ -1,19 +1,12 @@
 import { getUser } from "../utils.js";
 
 export default async (sock, from, sender) => {
-  const user = getUser(sender);
+  const user = await getUser(sender);
   if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
-  const fish = user.fish || {
-    kecil: 0,
-    sedang: 0,
-    besar: 0,
-    legend: 0,
-  };
+  const totalFish = user.kecil + user.sedang + user.besar + user.legend;
 
-  const totalFish = fish.kecil + fish.sedang + fish.besar + fish.legend;
-
-  const shieldActive = Date.now() < user.shieldUntil;
+  const shieldActive = Date.now() < user.shielduntil;
 
   return sock.sendMessage(from, {
     text: `📊 Status Kamu
@@ -26,10 +19,10 @@ HP: ${user.hp}
 🏦 Bank: ${user.bank}
 
 🎣 Ikan:
-- Kecil: ${fish.kecil}
-- Sedang: ${fish.sedang}
-- Besar: ${fish.besar}
-- Legend: ${fish.legend}
+- Kecil: ${user.kecil}
+- Sedang: ${user.sedang}
+- Besar: ${user.besar}
+- Legend: ${user.legend}
 Total: ${totalFish}
 
 🛡 Shield: ${shieldActive ? "AKTIF" : "Tidak aktif"}
