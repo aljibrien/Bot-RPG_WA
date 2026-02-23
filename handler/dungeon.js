@@ -1,5 +1,18 @@
-import { getUser, saveDB, isPremium, checkLevelUp } from "../utils.js";
+import {
+  getUser,
+  saveDB,
+  isPremium,
+  checkLevelUp,
+  useLimit,
+} from "../utils.js";
 import config from "../config.js";
+
+function formatTime(ms) {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}m ${seconds}s`;
+}
 
 export default async (sock, from, sender) => {
   const user = getUser(sender);
@@ -80,6 +93,7 @@ export default async (sock, from, sender) => {
 
   const duration = Math.floor(Math.random() * 4 + 1) * 60000;
   user.dungeonEnd = now + duration;
+  useLimit(user);
   saveDB();
 
   return sock.sendMessage(from, {

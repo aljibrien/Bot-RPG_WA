@@ -1,4 +1,4 @@
-import { getUser, saveDB, isPremium } from "../utils.js";
+import { getUser, saveDB, isPremium, useLimit } from "../utils.js";
 import config from "../config.js";
 
 function formatTime(ms) {
@@ -45,16 +45,16 @@ Sisa waktu ${formatTime(remaining)}`,
 
     if (chance < 0.6) {
       user.fish.kecil += amount;
-      rarity = "Ikan kecil";
+      rarity = "Ikan ukuran kecil";
     } else if (chance < 0.9) {
       user.fish.sedang += amount;
-      rarity = "Ikan sedang";
+      rarity = "Ikan ukuran sedang";
     } else if (chance < 0.99) {
       user.fish.besar += amount;
-      rarity = "Ikan besar";
+      rarity = "Ikan ukuran besar";
     } else {
       user.fish.legend += amount;
-      rarity = "Ikan LEGEND";
+      rarity = "Ikan LEGEND✨";
     }
 
     user.fishingEnd = 0;
@@ -85,6 +85,7 @@ Tunggu ${formatTime(remainingCooldown)}`,
   const duration = Math.floor(Math.random() * 3 + 1) * 60000;
 
   user.fishingEnd = now + duration;
+  useLimit(user);
   saveDB();
 
   return sock.sendMessage(from, {

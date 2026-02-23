@@ -1,4 +1,4 @@
-import { getUser, saveDB } from "../utils.js";
+import { getUser, saveDB, useLimit } from "../utils.js";
 
 export default async (sock, from, sender, args, type) => {
   const user = getUser(sender);
@@ -14,6 +14,7 @@ export default async (sock, from, sender, args, type) => {
 
     user.gold -= amount;
     user.bank += amount;
+    useLimit(user);
     saveDB();
 
     return sock.sendMessage(from, { text: `Deposit ${amount} gold.` });
@@ -25,6 +26,7 @@ export default async (sock, from, sender, args, type) => {
 
     user.bank -= amount;
     user.gold += amount;
+    useLimit(user);
     saveDB();
 
     return sock.sendMessage(from, { text: `Withdraw ${amount} gold.` });

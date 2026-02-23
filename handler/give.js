@@ -1,4 +1,4 @@
-import { getUser, saveDB } from "../utils.js";
+import { getUser, saveDB, useLimit } from "../utils.js";
 import config from "../config.js";
 
 export default async (sock, from, msg, sender, args) => {
@@ -41,7 +41,7 @@ export default async (sock, from, msg, sender, args) => {
   giver.gold -= amount;
 
   targetUser.gold += amount;
-
+  useLimit(user);
   saveDB();
 
   return sock.sendMessage(from, {

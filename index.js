@@ -13,6 +13,7 @@ import user from "./handler/user.js";
 import leaderboard from "./handler/leaderboard.js";
 import shop from "./handler/shop.js";
 import give from "./handler/give.js";
+import sell from "./handler/sell.js";
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("./session");
@@ -74,7 +75,6 @@ async function startBot() {
             text: "Limit harian habis. Upgrade premium.",
           });
         }
-        userData.limit--;
       }
     }
 
@@ -132,6 +132,9 @@ async function startBot() {
       case "give":
         return give(sock, from, msg, sender, args);
 
+      case "sell":
+        return sell(sock, from, sender, args);
+
       case "help":
         return sock.sendMessage(from, {
           text: `List Command:
@@ -143,9 +146,11 @@ async function startBot() {
 ──── ୨୧ BANK ୨୧ ────
 ╰┈➤ .deposit 100
 ╰┈➤ .withdraw 100
+╰┈➤ .sell kecil 10 (jual ikan sebagian)
+╰┈➤ .sell all (jual ikan semuanya)
 ──── ୨୧ User ୨୧ ────
 ╰┈➤ .me
-╰┈➤ .give
+╰┈➤ .give @tag
 ╰┈➤ .lb (leaderboard)`,
         });
 

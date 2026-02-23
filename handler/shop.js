@@ -9,10 +9,10 @@ export default async (sock, from, sender, args) => {
   if (!item) {
     return sock.sendMessage(from, {
       text: `🛒 SHOP LIST:
-limit - 150 gold (+5 limit)
-shield - 350 gold (anti rob 1 jam)
-heal - 100 gold (+50 HP)
-dungeon - 200 gold (reset cooldown)`,
+.limit - 150 gold (+5 limit)
+.shield - 350 gold (anti rob 1 jam)
+.heal - 100 gold (+50 HP)
+.dungeon - 200 gold (reset cooldown)`,
     });
   }
 

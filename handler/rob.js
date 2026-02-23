@@ -1,4 +1,4 @@
-import { getUser, db, saveDB } from "../utils.js";
+import { getUser, db, saveDB, useLimit } from "../utils.js";
 import config from "../config.js";
 
 export default async (sock, from, msg, sender) => {
@@ -47,5 +47,6 @@ export default async (sock, from, msg, sender) => {
   }
 
   user.lastRob = now;
+  useLimit(user);
   saveDB();
 };

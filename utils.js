@@ -99,6 +99,12 @@ function checkLevelUp(user) {
   }
 }
 
+function useLimit(user) {
+  if (!isPremium(user)) {
+    user.limit--;
+  }
+}
+
 export {
   db,
   saveDB,
@@ -107,4 +113,5 @@ export {
   getUser,
   isPremium,
   checkLevelUp,
+  useLimit,
 };
