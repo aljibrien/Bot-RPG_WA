@@ -1,8 +1,11 @@
-import makeWASocket, { useMultiFileAuthState } from "@whiskeysockets/baileys";
+import pkg from "@whiskeysockets/baileys";
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = pkg;
+
 import P from "pino";
 import "dotenv/config";
 import config from "./config.js";
 import qrcode from "qrcode-terminal";
+import express from "express";
 
 import { isRegistered, getUser, saveUser, isPremium } from "./utils.js";
 
@@ -17,16 +20,49 @@ import shop from "./handler/shop.js";
 import give from "./handler/give.js";
 import sell from "./handler/sell.js";
 
+// ==========================
+// EXPRESS KEEP ALIVE
+// ==========================
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Bot RPG is running.");
+});
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Web server aktif.");
+});
+
+// ==========================
+// GLOBAL ERROR HANDLER
+// ==========================
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+
+// ==========================
+// START BOT
+// ==========================
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("./session");
 
   const sock = makeWASocket({
     logger: P({ level: "silent" }),
     auth: state,
+    browser: ["Windows", "Chrome", "120.0.0"],
+    markOnlineOnConnect: true,
+    syncFullHistory: false,
   });
 
   sock.ev.on("creds.update", saveCreds);
 
+  // ==========================
+  // MESSAGE HANDLER
+  // ==========================
   sock.ev.on("messages.upsert", async ({ messages }) => {
     try {
       const msg = messages[0];
@@ -45,9 +81,6 @@ async function startBot() {
       const args = text.trim().split(/\s+/);
       const command = args[0].slice(1).toLowerCase();
 
-      // ======================
-      // WAJIB DAFTAR
-      // ======================
       if (command !== "daftar" && !(await isRegistered(sender))) {
         return sock.sendMessage(from, {
           text: "Kamu belum terdaftar. Ketik .daftar dulu.",
@@ -58,36 +91,23 @@ async function startBot() {
       const now = Date.now();
       const oneDay = 86400000;
 
-      // ======================
-      // RESET LIMIT HARIAN
-      // ======================
       if (userData && now - userData.lastreset > oneDay) {
-        if (!isPremium(userData)) {
-          userData.limit = 30;
-        }
+        if (!isPremium(userData)) userData.limit = 30;
         userData.lastreset = now;
         await saveUser(sender, userData);
       }
 
-      // ======================
-      // LIMIT CHECK (no auto minus di sini!)
-      // ======================
       if (
         userData &&
         !["daftar", "help", "lb", "shop", "me"].includes(command)
       ) {
-        if (!isPremium(userData)) {
-          if (userData.limit <= 0) {
-            return sock.sendMessage(from, {
-              text: "Limit harian habis. Upgrade premium.",
-            });
-          }
+        if (!isPremium(userData) && userData.limit <= 0) {
+          return sock.sendMessage(from, {
+            text: "Limit harian habis. Upgrade premium.",
+          });
         }
       }
 
-      // ======================
-      // ANTI SPAM
-      // ======================
       if (userData) {
         if (now - userData.lastcommand < 1000) {
           userData.spamcount++;
@@ -104,10 +124,13 @@ async function startBot() {
         await saveUser(sender, userData);
       }
 
-      // ======================
-      // ROUTING COMMAND
-      // ======================
       switch (command) {
+        case "p":
+        case "ping":
+          return sock.sendMessage(from, {
+            text: "Bot aktif",
+          });
+
         case "daftar":
           return register(sock, from, sender);
 
@@ -162,75 +185,39 @@ async function startBot() {
 ╰┈➤ .lb (leaderboard)`,
           });
 
-        case "addprem": {
-          if (sender !== config.owner) return;
-
-          let days;
-          let target;
-
-          const mentioned =
-            msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-
-          if (mentioned) {
-            days = parseInt(args[1]);
-            target = mentioned;
-          } else {
-            const number = args[1];
-            days = parseInt(args[2]);
-
-            if (!number || !days) {
-              return sock.sendMessage(from, {
-                text: "Format:\n.addprem 30 @tag\natau\n.addprem 08xxxx 30",
-              });
-            }
-
-            const formatted = number.replace(/^0/, "62");
-            target = formatted + "@s.whatsapp.net";
-          }
-
-          if (!days || days <= 0)
-            return sock.sendMessage(from, {
-              text: "Jumlah hari tidak valid.",
-            });
-
-          const targetUser = await getUser(target);
-          if (!targetUser)
-            return sock.sendMessage(from, {
-              text: "User belum terdaftar.",
-            });
-
-          targetUser.premium = true;
-          targetUser.premiumexpire = Date.now() + days * 86400000;
-
-          await saveUser(target, targetUser);
-
-          return sock.sendMessage(from, {
-            text: `Premium ${days} hari berhasil diberikan.`,
-          });
-        }
-
         default:
           return;
       }
     } catch (err) {
-      console.error("ERROR:", err);
+      console.error("Handler Error:", err);
     }
   });
 
+  // ==========================
+  // CONNECTION HANDLER (FIXED)
+  // ==========================
   sock.ev.on("connection.update", (update) => {
-    const { connection, qr } = update;
+    const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
+      console.log("QR muncul");
       qrcode.generate(qr, { small: true });
+    }
+
+    if (connection === "close") {
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+
+      console.log("Status code:", statusCode);
+
+      if (statusCode !== DisconnectReason.loggedOut) {
+        setTimeout(() => startBot(), 5000);
+      } else {
+        console.log("Session logout.");
+      }
     }
 
     if (connection === "open") {
       console.log("Bot tersambung.");
-    }
-
-    if (connection === "close") {
-      console.log("Koneksi tertutup. Reconnecting...");
-      startBot();
     }
   });
 }
