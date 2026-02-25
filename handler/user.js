@@ -1,19 +1,23 @@
-import { getUser } from "../utils.js";
+import { getUser, isPremium, getMaxHP } from "../utils.js";
 
 export default async (sock, from, sender) => {
   const user = await getUser(sender);
-  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!user) {
+    return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  }
 
   const totalFish = user.kecil + user.sedang + user.besar + user.legend;
 
   const shieldActive = Date.now() < user.shielduntil;
+  const premium = isPremium(user);
+  const maxHP = getMaxHP(user);
 
   return sock.sendMessage(from, {
     text: `📊 Status Kamu
 
 Level: ${user.level}
 Exp: ${user.exp}
-HP: ${user.hp}
+HP: ${user.hp} / ${maxHP}
 
 💰 Gold: ${user.gold}
 🏦 Bank: ${user.bank}
@@ -26,6 +30,7 @@ HP: ${user.hp}
 Total: ${totalFish}
 
 🛡 Shield: ${shieldActive ? "AKTIF" : "Tidak aktif"}
-⚡ Limit: ${user.limit}`,
+💎 Premium: ${premium ? "AKTIF" : "Tidak aktif"}
+⚡ Limit: ${premium ? "♾ Unlimited" : user.limit}`,
   });
 };

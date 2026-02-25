@@ -1,11 +1,9 @@
 import pkg from "@whiskeysockets/baileys";
-
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = pkg;
 
-import { jidDecode } from "@whiskeysockets/baileys";
-import P from "pino";
 import "dotenv/config";
 import config from "./config.js";
+import P from "pino";
 import qrcode from "qrcode-terminal";
 import express from "express";
 
@@ -24,37 +22,49 @@ import sell from "./handler/sell.js";
 import claim from "./handler/claim.js";
 import rest from "./handler/rest.js";
 
+// ==========================
+// EXPRESS KEEP ALIVE
+// ==========================
 const app = express();
-app.get("/", (req, res) => res.send("Bot RPG is running."));
+
+app.get("/", (req, res) => {
+  res.send("Bot RPG is running.");
+});
+
 app.listen(process.env.PORT || 3000, () => {
   console.log("Web server aktif.");
 });
 
-process.on("unhandledRejection", console.error);
-process.on("uncaughtException", console.error);
+// ==========================
+// GLOBAL ERROR HANDLER
+// ==========================
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err);
+});
 
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+
+// ==========================
+// START BOT
+// ==========================
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("./session");
 
   const sock = makeWASocket({
     logger: P({ level: "silent" }),
     auth: state,
-    syncFullHistory: false,
     browser: ["Windows", "Chrome", "120.0.0"],
     markOnlineOnConnect: true,
-    generateHighQualityLinkPreview: true, // Tambahan
-    // Fungsi ini membantu Baileys memulihkan sesi yang hilang
-    getMessage: async (key) => {
-      if (store) {
-        const msg = await store.loadMessage(key.remoteJid, key.id);
-        return msg?.message || undefined;
-      }
-      return { conversation: "Persiapan pesan..." };
-    },
+    syncFullHistory: false,
   });
 
   sock.ev.on("creds.update", saveCreds);
 
+  // ==========================
+  // MESSAGE HANDLER
+  // ==========================
   sock.ev.on("messages.upsert", async ({ messages }) => {
     try {
       const msg = messages[0];
@@ -63,7 +73,7 @@ async function startBot() {
 
       const from = msg.key.remoteJid;
       const isGroup = from.endsWith("@g.us");
-      let sender = isGroup ? msg.key.participant || msg.key.remoteJid : from;
+      const sender = isGroup ? msg.key.participant : from;
 
       const text =
         msg.message.conversation || msg.message.extendedTextMessage?.text;
@@ -83,17 +93,15 @@ async function startBot() {
       const now = Date.now();
       const oneDay = 86400000;
 
-      // RESET LIMIT HARIAN
       if (userData && now - userData.lastreset > oneDay) {
-        if (!isPremium(userData)) userData.limit = 20;
+        if (!isPremium(userData)) userData.limit = 30;
         userData.lastreset = now;
         await saveUser(sender, userData);
       }
 
-      // CEK LIMIT
       if (
         userData &&
-        !["daftar", "help", "lb", "shop", "me", "claim"].includes(command)
+        !["daftar", "help", "lb", "shop", "me"].includes(command)
       ) {
         if (!isPremium(userData) && userData.limit <= 0) {
           return sock.sendMessage(from, {
@@ -102,7 +110,6 @@ async function startBot() {
         }
       }
 
-      // ANTI SPAM
       if (userData) {
         if (now - userData.lastcommand < 1000) {
           userData.spamcount++;
@@ -122,7 +129,9 @@ async function startBot() {
       switch (command) {
         case "p":
         case "ping":
-          return sock.sendMessage(from, { text: "Bot aktif" }, { quoted: msg });
+          return sock.sendMessage(from, {
+            text: "Bot aktif",
+          });
 
         case "daftar":
           return register(sock, from, sender);
@@ -158,13 +167,6 @@ async function startBot() {
         case "sell":
           return sell(sock, from, sender, args);
 
-        case "claim":
-          return claim(sock, from, sender);
-
-        case "rest":
-        case "hospital":
-          return rest(sock, from, sender);
-
         case "help":
           return sock.sendMessage(from, {
             text: `List Command:
@@ -172,19 +174,17 @@ async function startBot() {
 ──── ୨୧ Minigames ୨୧ ────
 ╰┈➤ .fish
 ╰┈➤ .dungeon
-╰┈➤ .claim
 ╰┈➤ .rob @tag
-╰┈➤ .rest
 ──── ୨୧ BANK ୨୧ ────
 ╰┈➤ .deposit 100
 ╰┈➤ .withdraw 100
-╰┈➤ .sell kecil 10
-╰┈➤ .sell all
+╰┈➤ .sell kecil 10 (jual ikan sebagian)
+╰┈➤ .sell all (jual ikan semuanya)
 ╰┈➤ .shop
 ──── ୨୧ User ୨୧ ────
 ╰┈➤ .me
 ╰┈➤ .give @tag
-╰┈➤ .lb`,
+╰┈➤ .lb (leaderboard)`,
           });
 
         default:
@@ -195,7 +195,10 @@ async function startBot() {
     }
   });
 
-  sock.ev.on("connection.update", async (update) => {
+  // ==========================
+  // CONNECTION HANDLER (FIXED)
+  // ==========================
+  sock.ev.on("connection.update", (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
@@ -206,6 +209,8 @@ async function startBot() {
     if (connection === "close") {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
 
+      console.log("Status code:", statusCode);
+
       if (statusCode !== DisconnectReason.loggedOut) {
         setTimeout(() => startBot(), 5000);
       } else {
@@ -215,8 +220,6 @@ async function startBot() {
 
     if (connection === "open") {
       console.log("Bot tersambung.");
-      await sock.groupFetchAllParticipating();
-      console.log("Group metadata synced.");
     }
   });
 }

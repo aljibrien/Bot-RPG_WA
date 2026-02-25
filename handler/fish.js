@@ -1,4 +1,4 @@
-import { getUser, saveUser, isPremium, useLimit } from "../utils.js";
+import { getUser, saveUser, useLimit, getMaxHP } from "../utils.js";
 import config from "../config.js";
 
 function format(ms) {
@@ -8,73 +8,50 @@ function format(ms) {
 
 export default async (sock, from, sender) => {
   const user = await getUser(sender);
-  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!user) {
+    return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  }
 
   const now = Date.now();
-  const premium = isPremium(user);
 
-  // 🔥 Kalau masih mancing
-  if (user.fishingend > now) {
+  // ================= REST CHECK =================
+  if (user.restend && user.restend > now) {
     return sock.sendMessage(from, {
-      text: `@${sender.split("@")[0]} kamu masih mancing.\nSisa ${format(user.fishingend - now)}`,
-      mentions: [sender],
+      text: "Kamu sedang istirahat di hospital. Tidak bisa mancing.",
     });
   }
 
-  // 🔥 Kalau selesai & claim
-  if (user.fishingend && user.fishingend <= now) {
-    let chance = Math.random();
-
-    if (premium) {
-      chance -= config.premiumBoost.fishingLuck;
-      if (chance < 0) chance = 0;
-    }
-
-    const amount = premium ? config.premiumBoost.fishAmount : 1;
-    let rarity = "";
-
-    if (chance < 0.6) {
-      user.kecil += amount;
-      rarity = "Ikan ukuran kecil";
-    } else if (chance < 0.9) {
-      user.sedang += amount;
-      rarity = "Ikan ukuran sedang";
-    } else if (chance < 0.99) {
-      user.besar += amount;
-      rarity = "Ikan ukuran besar";
-    } else {
-      user.legend += amount;
-      rarity = "Ikan LEGEND ✨";
-    }
-
-    user.fishingend = 0;
-    user.lastfishing = now;
-
-    await saveUser(sender, user);
-
+  // ================= HP 0 CHECK =================
+  if (user.hp <= 0) {
     return sock.sendMessage(from, {
-      text: `${rarity} didapat!\n+${amount} ekor`,
+      text: "HP kamu 0. Istirahat dulu di hospital.",
     });
   }
 
-  // 🔥 Cooldown sebelum mulai
+  // ================= MASIH MANCING =================
+  if (user.fishingend && user.fishingend > now) {
+    return sock.sendMessage(from, {
+      text: `Masih mancing.\nSisa ${format(user.fishingend - now)}`,
+    });
+  }
+
+  // ================= COOLDOWN =================
   const cooldown = config.cooldown.fishing - (now - user.lastfishing);
-  if (cooldown > 0)
+  if (cooldown > 0) {
     return sock.sendMessage(from, {
-      text: `@${sender.split("@")[0]} mancing masih cooldown.\nTunggu ${format(cooldown)}`,
-      mentions: [sender],
+      text: `Mancing masih cooldown.\nTunggu ${format(cooldown)}`,
     });
+  }
 
-  // 🔥 Mulai mancing
+  // ================= START FISHING =================
   user.fishingend = now + Math.floor(Math.random() * 3 + 1) * 60000;
 
   useLimit(user);
   await saveUser(sender, user);
 
   return sock.sendMessage(from, {
-    text: `@${sender.split("@")[0]} mulai mancing!
-Durasi ${format(user.fishingend - now)}
-Ketik .fish lagi setelah selesai.`,
-    mentions: [sender],
+    text: `🎣 Mulai mancing!\nDurasi ${format(
+      user.fishingend - now,
+    )}\nKetik .claim untuk ambil hasil.`,
   });
 };

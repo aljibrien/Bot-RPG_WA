@@ -8,7 +8,11 @@ export default async (sock, from, sender, args) => {
 
   if (!item) {
     return sock.sendMessage(from, {
-      text: `🛒 SHOP LIST:
+      text: `── .✦
+🛒 SHOP LIST:
+
+💰 Gold kamu: ${user.gold}
+
 .shop limit - 150 gold (+5 limit)
 .shop shield - 350 gold (anti rob 1 jam)
 .shop heal - 100 gold (+50 HP)

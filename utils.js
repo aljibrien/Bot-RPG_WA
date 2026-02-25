@@ -30,6 +30,7 @@ async function registerUser(id) {
     legend: 0,
 
     hp: 100,
+    restend: 0,
 
     lastrob: 0,
     lastfishing: 0,
@@ -39,7 +40,7 @@ async function registerUser(id) {
     premium: false,
     premiumexpire: 0,
 
-    limit: 30,
+    limit: 20,
     lastreset: 0,
     lastcommand: 0,
     spamcount: 0,
@@ -93,13 +94,17 @@ function isPremium(user) {
 // LEVEL SYSTEM
 // ========================
 function checkLevelUp(user) {
+  let leveledUp = false;
   let requiredExp = user.level * 100;
 
   while (user.exp >= requiredExp) {
     user.exp -= requiredExp;
     user.level++;
+    leveledUp = true;
     requiredExp = user.level * 100;
   }
+
+  return leveledUp;
 }
 
 // ========================
@@ -111,6 +116,12 @@ function useLimit(user) {
   }
 }
 
+function getMaxHP(user) {
+  const base = 100;
+  const perLevel = 20;
+  return base + (user.level - 1) * perLevel;
+}
+
 export {
   isRegistered,
   registerUser,
@@ -119,4 +130,5 @@ export {
   isPremium,
   checkLevelUp,
   useLimit,
+  getMaxHP,
 };
