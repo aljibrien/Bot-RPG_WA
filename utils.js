@@ -15,7 +15,7 @@ async function isRegistered(id) {
 async function registerUser(id) {
   const { error } = await supabase.from("users").insert({
     id,
-    name,
+    name: name,
     level: 1,
     exp: 0,
     gold: 100,
