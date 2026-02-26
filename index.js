@@ -100,13 +100,12 @@ async function startBot() {
       const from = msg.key.remoteJid;
       const isGroup = from.endsWith("@g.us");
 
-      // FULL JID TANPA UBAH FORMAT
-      const sender = isGroup ? msg.key.participant : msg.key.remoteJid;
+      const sender = (msg.key.participant || msg.key.remoteJid).split("@")[0];
 
-      console.log("IS GROUP:", isGroup);
-      console.log("REMOTE:", msg.key.remoteJid);
-      console.log("PARTICIPANT:", msg.key.participant);
-      console.log("SENDER FINAL:", sender);
+      // console.log("IS GROUP:", isGroup);
+      // console.log("REMOTE:", msg.key.remoteJid);
+      // console.log("PARTICIPANT:", msg.key.participant);
+      // console.log("SENDER FINAL:", sender);
 
       if (!sender) return;
 
