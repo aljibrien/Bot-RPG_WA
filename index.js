@@ -24,6 +24,7 @@ import give from "./handler/give.js";
 import sell from "./handler/sell.js";
 import claim from "./handler/claim.js";
 import rest from "./handler/rest.js";
+import addprem from "./handler/addprem.js";
 
 // =======================
 // EXPRESS SERVER
@@ -211,6 +212,9 @@ async function startBot() {
         case "rest":
         case "hospital":
           return rest(sock, from, sender, msg);
+
+        case "addprem":
+          return addprem(sock, from, sender, msg, args);
 
         case "help":
           return sock.sendMessage(from, {
