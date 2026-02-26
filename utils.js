@@ -27,7 +27,7 @@ async function registerUser(id) {
     legend: 0,
 
     hp: 100,
-    worker: 1,
+    workers: 1,
     restend: 0,
 
     lastrob: 0,
