@@ -1,8 +1,9 @@
-import pkg from "@whiskeysockets/baileys";
+import makeWASocket, {
+  useMultiFileAuthState,
+  DisconnectReason,
+  fetchLatestBaileysVersion,
+} from "@whiskeysockets/baileys";
 
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = pkg;
-
-import { jidDecode } from "@whiskeysockets/baileys";
 import P from "pino";
 import "dotenv/config";
 import config from "./config.js";
@@ -24,6 +25,10 @@ import sell from "./handler/sell.js";
 import claim from "./handler/claim.js";
 import rest from "./handler/rest.js";
 
+// =======================
+// EXPRESS SERVER
+// =======================
+
 const app = express();
 app.get("/", (req, res) => res.send("Bot RPG is running."));
 app.listen(process.env.PORT || 3000, () => {
@@ -33,45 +38,83 @@ app.listen(process.env.PORT || 3000, () => {
 process.on("unhandledRejection", console.error);
 process.on("uncaughtException", console.error);
 
+// =======================
+// START BOT
+// =======================
+
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("./session");
+  const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
     logger: P({ level: "silent" }),
     auth: state,
-    syncFullHistory: false,
-    browser: ["Windows", "Chrome", "120.0.0"],
+    version,
+    syncFullHistory: true,
     markOnlineOnConnect: true,
-    generateHighQualityLinkPreview: true, // Tambahan
-    // Fungsi ini membantu Baileys memulihkan sesi yang hilang
-    getMessage: async (key) => {
-      if (store) {
-        const msg = await store.loadMessage(key.remoteJid, key.id);
-        return msg?.message || undefined;
-      }
-      return { conversation: "Persiapan pesan..." };
-    },
+    generateHighQualityLinkPreview: true,
+    retryRequestDelayMs: 250,
+    defaultQueryTimeoutMs: 0,
   });
 
   sock.ev.on("creds.update", saveCreds);
+
+  // =======================
+  // CONNECTION INFO
+  // =======================
+
+  sock.ev.on("connection.update", ({ connection, lastDisconnect, qr }) => {
+    if (qr) {
+      console.log("QR muncul");
+      qrcode.generate(qr, { small: true });
+    }
+
+    if (connection === "open") {
+      console.log("Bot tersambung.");
+    }
+
+    if (connection === "close") {
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+      console.log("Connection closed:", statusCode);
+
+      if (statusCode !== DisconnectReason.loggedOut) {
+        setTimeout(() => startBot(), 5000);
+      } else {
+        console.log("Session logout.");
+      }
+    }
+  });
+
+  // =======================
+  // MESSAGE HANDLER
+  // =======================
 
   sock.ev.on("messages.upsert", async ({ messages }) => {
     try {
       const msg = messages[0];
       if (!msg?.message) return;
       if (msg.key.fromMe) return;
+      if (msg.message?.protocolMessage) return;
 
       const from = msg.key.remoteJid;
       const isGroup = from.endsWith("@g.us");
-      let sender = isGroup ? msg.key.participant || msg.key.remoteJid : from;
+
+      // FULL JID TANPA UBAH FORMAT
+      const sender = isGroup ? msg.key.participant : msg.key.remoteJid;
+
+      if (!sender) return;
 
       const text =
-        msg.message.conversation || msg.message.extendedTextMessage?.text;
+        msg.message.conversation || msg.message.extendedTextMessage?.text || "";
 
-      if (!text?.startsWith(config.prefix)) return;
+      if (!text.startsWith(config.prefix)) return;
 
       const args = text.trim().split(/\s+/);
       const command = args[0].slice(1).toLowerCase();
+
+      // ======================
+      // REGISTER CHECK
+      // ======================
 
       if (command !== "daftar" && !(await isRegistered(sender))) {
         return sock.sendMessage(from, {
@@ -83,14 +126,14 @@ async function startBot() {
       const now = Date.now();
       const oneDay = 86400000;
 
-      // RESET LIMIT HARIAN
+      // RESET LIMIT
       if (userData && now - userData.lastreset > oneDay) {
         if (!isPremium(userData)) userData.limit = 20;
         userData.lastreset = now;
         await saveUser(sender, userData);
       }
 
-      // CEK LIMIT
+      // LIMIT CHECK
       if (
         userData &&
         !["daftar", "help", "lb", "shop", "me", "claim"].includes(command)
@@ -119,51 +162,55 @@ async function startBot() {
         await saveUser(sender, userData);
       }
 
+      // ======================
+      // COMMAND SWITCH
+      // ======================
+
       switch (command) {
         case "p":
         case "ping":
           return sock.sendMessage(from, { text: "Bot aktif" }, { quoted: msg });
 
         case "daftar":
-          return register(sock, from, sender);
+          return register(sock, from, sender, msg);
 
         case "fish":
         case "mancing":
-          return fish(sock, from, sender);
+          return fish(sock, from, sender, msg);
 
         case "dungeon":
           return dungeon(sock, from, sender);
 
         case "rob":
-          return rob(sock, from, msg, sender);
+          return rob(sock, from, sender, msg);
 
         case "deposit":
-          return bank(sock, from, sender, args, "deposit");
+          return bank(sock, from, sender, msg, args, "deposit");
 
         case "withdraw":
-          return bank(sock, from, sender, args, "withdraw");
+          return bank(sock, from, sender, msg, args, "withdraw");
 
         case "me":
-          return user(sock, from, sender);
+          return user(sock, from, sender, msg);
 
         case "lb":
           return leaderboard(sock, from);
 
         case "shop":
-          return shop(sock, from, sender, args);
+          return shop(sock, from, sender, msg, args);
 
         case "give":
-          return give(sock, from, msg, sender, args);
+          return give(sock, from, sender, msg, args);
 
         case "sell":
-          return sell(sock, from, sender, args);
+          return sell(sock, from, sender, msg, args);
 
         case "claim":
-          return claim(sock, from, sender);
+          return claim(sock, from, sender, msg);
 
         case "rest":
         case "hospital":
-          return rest(sock, from, sender);
+          return rest(sock, from, sender, msg);
 
         case "help":
           return sock.sendMessage(from, {
@@ -192,31 +239,6 @@ async function startBot() {
       }
     } catch (err) {
       console.error("Handler Error:", err);
-    }
-  });
-
-  sock.ev.on("connection.update", async (update) => {
-    const { connection, lastDisconnect, qr } = update;
-
-    if (qr) {
-      console.log("QR muncul");
-      qrcode.generate(qr, { small: true });
-    }
-
-    if (connection === "close") {
-      const statusCode = lastDisconnect?.error?.output?.statusCode;
-
-      if (statusCode !== DisconnectReason.loggedOut) {
-        setTimeout(() => startBot(), 5000);
-      } else {
-        console.log("Session logout.");
-      }
-    }
-
-    if (connection === "open") {
-      console.log("Bot tersambung.");
-      await sock.groupFetchAllParticipating();
-      console.log("Group metadata synced.");
     }
   });
 }

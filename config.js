@@ -13,8 +13,8 @@ const config = {
     fishAmount: 2,
   },
 
-  // owner: "274031966220534@lid",
-  owner: "274031966220534@s.whatsapp.net",
+  owner: "274031966220534@lid",
+  // owner: "274031966220534@s.whatsapp.net",
 };
 
 export default config;

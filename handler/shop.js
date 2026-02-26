@@ -1,6 +1,6 @@
 import { getUser, saveUser } from "../utils.js";
 
-export default async (sock, from, sender, args) => {
+export default async (sock, from, sender, msg, args) => {
   const user = await getUser(sender);
   if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 

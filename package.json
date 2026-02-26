@@ -1,7 +1,7 @@
 {
   "name": "bot-wa",
   "version": "1.0.0",
-  "description": "",
+  "description": "AL BOT WHATSAPP",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
-    "@whiskeysockets/baileys": "^6.6.0",
+    "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "pino": "^10.3.1",

@@ -1,6 +1,6 @@
 import { getUser, saveUser, useLimit } from "../utils.js";
 
-export default async (sock, from, msg, sender, args) => {
+export default async (sock, from, sender, msg, args) => {
   const target =
     msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
@@ -26,8 +26,12 @@ export default async (sock, from, msg, sender, args) => {
   await saveUser(sender, giver);
   await saveUser(target, receiver);
 
-  return sock.sendMessage(from, {
-    text: `Transfer ${amount} gold berhasil.`,
-    mentions: [sender, target],
-  });
+  return sock.sendMessage(
+    from,
+    {
+      text: `Transfer ${amount} gold berhasil.`,
+      mentions: [sender, target],
+    },
+    { quoted: msg },
+  );
 };

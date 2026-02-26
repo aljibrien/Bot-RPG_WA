@@ -7,7 +7,7 @@ import {
 } from "../utils.js";
 import config from "../config.js";
 
-export default async (sock, from, sender) => {
+export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
     return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
@@ -27,9 +27,13 @@ export default async (sock, from, sender) => {
 
   // Kalau masih rest
   if (user.restend && user.restend > now) {
-    return sock.sendMessage(from, {
-      text: "Kamu sedang istirahat di hospital.",
-    });
+    return sock.sendMessage(
+      from,
+      {
+        text: "Kamu sedang istirahat di hospital.",
+      },
+      { quoted: msg },
+    );
   }
 
   // ================= 🎣 FISH CLAIM =================
@@ -122,7 +126,11 @@ export default async (sock, from, sender) => {
 
   await saveUser(sender, user);
 
-  return sock.sendMessage(from, {
-    text: message.trim(),
-  });
+  return sock.sendMessage(
+    from,
+    {
+      text: message.trim(),
+    },
+    { quoted: msg },
+  );
 };

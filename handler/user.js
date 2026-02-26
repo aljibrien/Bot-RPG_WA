@@ -1,6 +1,6 @@
 import { getUser, isPremium, getMaxHP } from "../utils.js";
 
-export default async (sock, from, sender) => {
+export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
     return sock.sendMessage(from, { text: "Ketik .daftar dulu." });

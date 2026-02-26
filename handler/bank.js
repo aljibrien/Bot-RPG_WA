@@ -1,6 +1,6 @@
 import { getUser, saveUser, useLimit } from "../utils.js";
 
-export default async (sock, from, sender, args, type) => {
+export default async (sock, from, sender, msg, args, type) => {
   const user = await getUser(sender);
   if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
@@ -27,5 +27,9 @@ export default async (sock, from, sender, args, type) => {
   useLimit(user);
   await saveUser(sender, user);
 
-  return sock.sendMessage(from, { text: `${type} ${amount} gold berhasil.` });
+  return sock.sendMessage(
+    from,
+    { text: `${type} ${amount} gold berhasil.` },
+    { quoted: msg },
+  );
 };

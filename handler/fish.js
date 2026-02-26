@@ -6,7 +6,7 @@ function format(ms) {
   return `${Math.floor(s / 60)}m ${s % 60}s`;
 }
 
-export default async (sock, from, sender) => {
+export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
     return sock.sendMessage(from, { text: "Ketik .daftar dulu." });

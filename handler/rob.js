@@ -1,7 +1,7 @@
 import { getUser, saveUser, useLimit } from "../utils.js";
 import config from "../config.js";
 
-export default async (sock, from, msg, sender) => {
+export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
@@ -17,21 +17,37 @@ export default async (sock, from, msg, sender) => {
     msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
   if (!target)
-    return sock.sendMessage(from, { text: "Tag target yang valid." });
+    return sock.sendMessage(
+      from,
+      { text: "Tag target yang valid." },
+      { quoted: msg },
+    );
 
   if (target === sender)
-    return sock.sendMessage(from, { text: "Rob diri sendiri? Serius?" });
+    return sock.sendMessage(
+      from,
+      { text: "Rob diri sendiri? Serius?" },
+      { quoted: msg },
+    );
 
   const victim = await getUser(target);
 
   if (!victim)
-    return sock.sendMessage(from, { text: "Target belum terdaftar." });
+    return sock.sendMessage(
+      from,
+      { text: "Target belum terdaftar." },
+      { quoted: msg },
+    );
 
   if (victim.gold <= 0)
-    return sock.sendMessage(from, { text: "Target miskin." });
+    return sock.sendMessage(from, { text: "Target miskin." }, { quoted: msg });
 
   if (Date.now() < victim.shielduntil)
-    return sock.sendMessage(from, { text: "Target sedang dilindungi." });
+    return sock.sendMessage(
+      from,
+      { text: "Target sedang dilindungi." },
+      { quoted: msg },
+    );
 
   const success = Math.random() < 0.5;
 
@@ -48,10 +64,14 @@ export default async (sock, from, msg, sender) => {
     await saveUser(sender, user);
     await saveUser(target, victim);
 
-    return sock.sendMessage(from, {
-      text: `@${sender.split("@")[0]} berhasil mencuri ${steal} gold.`,
-      mentions: [sender],
-    });
+    return sock.sendMessage(
+      from,
+      {
+        text: `💰 @${sender.split("@")[0]} berhasil mencuri ${steal} gold dari @${target.split("@")[0]}!`,
+        mentions: [sender, target],
+      },
+      { quoted: msg },
+    );
   } else {
     const penalty = 20;
     user.gold = Math.max(user.gold - penalty, 0);
@@ -61,8 +81,13 @@ export default async (sock, from, msg, sender) => {
 
     await saveUser(sender, user);
 
-    return sock.sendMessage(from, {
-      text: `Gagal rob. Denda ${penalty} gold.`,
-    });
+    return sock.sendMessage(
+      from,
+      {
+        text: `❌ @${sender.split("@")[0]} gagal merampok @${target.split("@")[0]} dan kena denda ${penalty} gold!`,
+        mentions: [sender, target],
+      },
+      { quoted: msg },
+    );
   }
 };
