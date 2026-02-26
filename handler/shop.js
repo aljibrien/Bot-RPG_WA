@@ -7,8 +7,10 @@ export default async (sock, from, sender, msg, args) => {
   const item = args[1]?.toLowerCase();
 
   if (!item) {
-    return sock.sendMessage(from, {
-      text: `── .✦
+    return sock.sendMessage(
+      from,
+      {
+        text: `── .✦
 🛒 SHOP LIST:
 
 💰 Gold kamu: ${user.gold}
@@ -17,7 +19,9 @@ export default async (sock, from, sender, msg, args) => {
 .shop shield - 350 gold (anti rob 1 jam)
 .shop heal - 100 gold (+50 HP)
 .shop dungeon - 50 gold (reset cooldown)`,
-    });
+      },
+      { quoted: msg },
+    );
   }
 
   if (item === "limit") {

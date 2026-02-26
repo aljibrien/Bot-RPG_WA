@@ -4,8 +4,8 @@ export default async (sock, from, sender, msg) => {
   if (await isRegistered(sender)) {
     return sock.sendMessage(from, { text: "Kamu sudah terdaftar." });
   }
-
-  await registerUser(sender);
+  const pushName = msg.pushName || "Player";
+  await registerUser(sender, pushName);
 
   return sock.sendMessage(
     from,

@@ -24,7 +24,7 @@ export default async (sock, from, sender, msg, args) => {
       { quoted: msg },
     );
 
-  const days = parseInt(args[1]);
+  const days = parseInt(args[2]);
   if (!days || isNaN(days))
     return sock.sendMessage(
       from,

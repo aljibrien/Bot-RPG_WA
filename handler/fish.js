@@ -9,7 +9,7 @@ function format(ms) {
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
-    return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+    return sock.sendMessage(from, { text: "Ketik .daftar dulu" });
   }
 
   const now = Date.now();
@@ -49,9 +49,13 @@ export default async (sock, from, sender, msg) => {
   useLimit(user);
   await saveUser(sender, user);
 
-  return sock.sendMessage(from, {
-    text: `🎣 Mulai mancing!\nDurasi ${format(
-      user.fishingend - now,
-    )}\nKetik .claim untuk ambil hasil.`,
-  });
+  return sock.sendMessage(
+    from,
+    {
+      text: `🎣 Mulai mancing!\nDurasi ${format(
+        user.fishingend - now,
+      )}\nKetik .claim untuk ambil hasil.`,
+    },
+    { quoted: msg },
+  );
 };

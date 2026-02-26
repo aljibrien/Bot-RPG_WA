@@ -12,8 +12,10 @@ export default async (sock, from, sender, msg) => {
   const premium = isPremium(user);
   const maxHP = getMaxHP(user);
 
-  return sock.sendMessage(from, {
-    text: `📊 Status Kamu
+  return sock.sendMessage(
+    from,
+    {
+      text: `📊 Status Kamu
 
 Level: ${user.level}
 Exp: ${user.exp}
@@ -32,5 +34,7 @@ Total: ${totalFish}
 🛡 Shield: ${shieldActive ? "AKTIF" : "Tidak aktif"}
 💎 Premium: ${premium ? "AKTIF" : "Tidak aktif"}
 ⚡ Limit: ${premium ? "♾ Unlimited" : user.limit}`,
-  });
+    },
+    { quoted: msg },
+  );
 };

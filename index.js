@@ -216,7 +216,18 @@ async function startBot() {
         case "addprem":
           return addprem(sock, from, sender, msg, args);
 
-        case "help":
+        case "setname":
+          const newName = args.slice(1).join(" ");
+          if (!newName)
+            return sock.sendMessage(from, { text: "Masukkan nama" });
+
+          const user = await getUser(sender);
+          user.name = newName;
+          await saveUser(sender, user);
+
+          return sock.sendMessage(from, { text: "Nama berhasil diubah." });
+
+        case "menu":
           return sock.sendMessage(from, {
             text: `List Command:
 ⚡︎ .daftar
@@ -236,6 +247,32 @@ async function startBot() {
 ╰┈➤ .me
 ╰┈➤ .give @tag
 ╰┈➤ .lb`,
+          });
+
+        case "Help":
+          return sock.sendMessage(from, {
+            text: `List Command:
+Cara menggunakan nya itu ketik diawali titik (.) dan hilangkan kurungan []
+lalu perintahnya dibawah ini:
+
+.daftar [Nama] -> untuk daftarkan akunnya
+──── ୨୧ Minigames ୨୧ ────
+.fish -> untuk memancing
+.dungeon -> untuk dapat gold + exp
+.claim -> ambil hadiah/kegiatan apapun
+.rob @tag -> Mencuri gold orang lain
+.rest -> untuk memulihkan darah
+──── ୨୧ BANK ୨୧ ────
+.deposit [berapa] -> menyimpan uang ke bank 100 misalnya
+.withdraw [berapa] -> tarik uang ke bank 100 misalnya
+.sell [tipe] [berapa] -> jual ikan kecil 10 misalnya 
+.sell all -> jual semua tipe ikan
+.shop -> membuka list shop
+──── ୨୧ User ୨୧ ────
+.me -> lihat status kamu
+.setname [namaBaru] -> mengganti nama kamu
+.give @tag -> kirim gold ke seseorang
+.lb -> melihat peringkat terkaya`,
           });
 
         default:

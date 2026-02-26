@@ -1,8 +1,6 @@
 import supabase from "./supabase.js";
 
-// ========================
 // CHECK REGISTER
-// ========================
 async function isRegistered(id) {
   const { data } = await supabase
     .from("users")
@@ -13,12 +11,11 @@ async function isRegistered(id) {
   return !!data;
 }
 
-// ========================
 // REGISTER USER
-// ========================
 async function registerUser(id) {
   const { error } = await supabase.from("users").insert({
     id,
+    name,
     level: 1,
     exp: 0,
     gold: 100,
@@ -53,9 +50,7 @@ async function registerUser(id) {
   if (error) console.error(error);
 }
 
-// ========================
 // GET USER
-// ========================
 async function getUser(id) {
   const { data, error } = await supabase
     .from("users")
@@ -67,18 +62,14 @@ async function getUser(id) {
   return data;
 }
 
-// ========================
 // SAVE USER
-// ========================
 async function saveUser(id, user) {
   const { error } = await supabase.from("users").update(user).eq("id", id);
 
   if (error) console.error(error);
 }
 
-// ========================
 // PREMIUM CHECK
-// ========================
 function isPremium(user) {
   if (!user.premium) return false;
 
@@ -90,9 +81,7 @@ function isPremium(user) {
   return true;
 }
 
-// ========================
 // LEVEL SYSTEM
-// ========================
 function checkLevelUp(user) {
   let leveledUp = false;
   let requiredExp = user.level * 100;
@@ -107,9 +96,7 @@ function checkLevelUp(user) {
   return leveledUp;
 }
 
-// ========================
 // LIMIT SYSTEM
-// ========================
 function useLimit(user) {
   if (!isPremium(user)) {
     user.limit--;

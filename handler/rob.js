@@ -26,7 +26,7 @@ export default async (sock, from, sender, msg) => {
   if (target === sender)
     return sock.sendMessage(
       from,
-      { text: "Rob diri sendiri? Serius?" },
+      { text: "Rob diri sendiri? Serius? Gila sih" },
       { quoted: msg },
     );
 
