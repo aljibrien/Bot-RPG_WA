@@ -18,7 +18,8 @@ export default async (sock, from, sender, msg, args) => {
 .shop limit - 150 gold (+5 limit)
 .shop shield - 350 gold (anti rob 1 jam)
 .shop heal - 100 gold (+50 HP)
-.shop dungeon - 50 gold (reset cooldown)`,
+.shop dungeon - 50 gold (reset cooldown)
+.shop worker - 10000 gold (+1 worker)`,
       },
       { quoted: msg },
     );
@@ -48,6 +49,15 @@ export default async (sock, from, sender, msg, args) => {
 
     user.gold -= 50;
     user.lastdungeon = 0;
+  } else if (item === "worker") {
+    if (user.workers >= config.worker.max)
+      return sock.sendMessage(from, { text: "Worker sudah maksimal." });
+
+    if (user.gold < config.worker.price)
+      return sock.sendMessage(from, { text: "Gold tidak cukup." });
+
+    user.gold -= config.worker.price;
+    user.workers += 1;
   } else {
     return sock.sendMessage(from, { text: "Item tidak ditemukan." });
   }

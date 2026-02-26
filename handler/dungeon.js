@@ -13,6 +13,14 @@ export default async (sock, from, sender, msg) => {
   }
 
   const now = Date.now();
+  const activeWorkers = getActiveWorkers(user);
+
+  // ================= WORKERS CHECK =================
+  if (activeWorkers >= user.workers) {
+    return sock.sendMessage(from, {
+      text: "Semua worker sedang bekerja.",
+    });
+  }
 
   // ================= REST CHECK =================
   if (user.restend && user.restend > now) {

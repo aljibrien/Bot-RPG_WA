@@ -1,4 +1,5 @@
 import { getUser, isPremium, getMaxHP } from "../utils.js";
+import config from "../config.js";
 
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
@@ -11,6 +12,7 @@ export default async (sock, from, sender, msg) => {
   const shieldActive = Date.now() < user.shielduntil;
   const premium = isPremium(user);
   const maxHP = getMaxHP(user);
+  const maxWorker = config.worker.max;
 
   return sock.sendMessage(
     from,
@@ -20,6 +22,8 @@ export default async (sock, from, sender, msg) => {
 Level: ${user.level}
 Exp: ${user.exp}
 HP: ${user.hp} / ${maxHP}
+
+👷Worker: ${user.workers} / ${maxWorker}
 
 💰 Gold: ${user.gold}
 🏦 Bank: ${user.bank}

@@ -1,5 +1,4 @@
-import { getUser, saveUser, useLimit } from "../utils.js";
-import config from "../config.js";
+import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
 
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
@@ -7,12 +6,30 @@ export default async (sock, from, sender, msg) => {
 
   const now = Date.now();
 
-  // 🔥 Cooldown
-  if (now - user.lastrob < config.cooldown.rob)
+  // ================= HOSPITAL CHECK =================
+  if (user.restend && user.restend > now) {
     return sock.sendMessage(from, {
-      text: "Cooldown rob 30 menit.",
+      text: "Kamu sedang di hospital.",
     });
+  }
 
+  // ================= HP CHECK =================
+  if (user.hp < 30) {
+    return sock.sendMessage(from, {
+      text: "HP minimal 30 untuk merampok.",
+    });
+  }
+
+  // ================= WORKER CHECK =================
+  const activeWorkers = getActiveWorkers(user);
+
+  if (activeWorkers >= user.workers) {
+    return sock.sendMessage(from, {
+      text: "Semua worker sedang bekerja.",
+    });
+  }
+
+  // ================= TARGET =================
   const target =
     msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
@@ -26,7 +43,7 @@ export default async (sock, from, sender, msg) => {
   if (target === sender)
     return sock.sendMessage(
       from,
-      { text: "Rob diri sendiri? Serius? Gila sih" },
+      { text: "Rob diri sendiri? Ngaco." },
       { quoted: msg },
     );
 
@@ -49,45 +66,34 @@ export default async (sock, from, sender, msg) => {
       { quoted: msg },
     );
 
+  // ================= START ROB =================
+  user.robend = now + 2 * 60 * 1000; // 2 menit
+
+  // Tentukan hasil sekarang
   const success = Math.random() < 0.5;
 
   if (success) {
-    const steal = Math.floor(victim.gold * (Math.random() * 0.3 + 0.1));
+    const steal = Math.floor(victim.gold * 0.2);
 
     victim.gold -= steal;
-    user.gold += steal;
+    user.pendinggold = (user.pendinggold || 0) + steal;
 
-    user.lastrob = now;
-
-    useLimit(user);
-
-    await saveUser(sender, user);
     await saveUser(target, victim);
-
-    return sock.sendMessage(
-      from,
-      {
-        text: `💰 @${sender.split("@")[0]} berhasil mencuri ${steal} gold dari @${target.split("@")[0]}!`,
-        mentions: [sender, target],
-      },
-      { quoted: msg },
-    );
   } else {
-    const penalty = 20;
-    user.gold = Math.max(user.gold - penalty, 0);
-    user.lastrob = now;
-
-    useLimit(user);
-
-    await saveUser(sender, user);
-
-    return sock.sendMessage(
-      from,
-      {
-        text: `❌ @${sender.split("@")[0]} gagal merampok @${target.split("@")[0]} dan kena denda ${penalty} gold!`,
-        mentions: [sender, target],
-      },
-      { quoted: msg },
-    );
+    const damage = 20;
+    user.hp = Math.max(user.hp - damage, 0);
   }
+
+  useLimit(user);
+  await saveUser(sender, user);
+
+  return sock.sendMessage(
+    from,
+    {
+      text: `🕵️ Worker mulai merampok...
+Durasi 2 menit.
+Ketik .claim setelah selesai.`,
+    },
+    { quoted: msg },
+  );
 };

@@ -29,9 +29,7 @@ export default async (sock, from, sender, msg) => {
   if (user.restend && user.restend > now) {
     return sock.sendMessage(
       from,
-      {
-        text: "Kamu sedang istirahat di hospital.",
-      },
+      { text: "Kamu sedang istirahat di hospital." },
       { quoted: msg },
     );
   }
@@ -86,8 +84,6 @@ export default async (sock, from, sender, msg) => {
         : baseExp;
 
       user.gold += gold;
-
-      const oldLevel = user.level;
       user.exp += expGain;
 
       const leveledUp = checkLevelUp(user);
@@ -118,6 +114,20 @@ export default async (sock, from, sender, msg) => {
     message += `\n\n`;
   }
 
+  // ================= 🕵️ ROB CLAIM =================
+  if (user.robend && user.robend <= now) {
+    if (user.pendinggold && user.pendinggold > 0) {
+      user.gold += user.pendinggold;
+      message += `🕵️ Rob berhasil!\n+${user.pendinggold} gold\n\n`;
+      user.pendinggold = 0;
+    } else {
+      message += `🕵️ Rob gagal! HP sudah berkurang.\n\n`;
+    }
+
+    user.robend = 0;
+  }
+
+  // ================= TIDAK ADA YANG BISA DI CLAIM =================
   if (!message) {
     return sock.sendMessage(from, {
       text: "Belum ada yang bisa di-claim.",
@@ -126,11 +136,5 @@ export default async (sock, from, sender, msg) => {
 
   await saveUser(sender, user);
 
-  return sock.sendMessage(
-    from,
-    {
-      text: message.trim(),
-    },
-    { quoted: msg },
-  );
+  return sock.sendMessage(from, { text: message.trim() }, { quoted: msg });
 };

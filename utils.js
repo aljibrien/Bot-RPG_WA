@@ -27,9 +27,11 @@ async function registerUser(id) {
     legend: 0,
 
     hp: 100,
+    worker: 1,
     restend: 0,
 
     lastrob: 0,
+    robend: 0,
     lastfishing: 0,
     lastdungeon: 0,
     dungeonend: 0,
@@ -109,6 +111,17 @@ function getMaxHP(user) {
   return base + (user.level - 1) * perLevel;
 }
 
+function getActiveWorkers(user) {
+  const now = Date.now();
+  let active = 0;
+
+  if (user.fishingend && user.fishingend > now) active++;
+  if (user.dungeonend && user.dungeonend > now) active++;
+  if (user.robend && user.robend > now) active++;
+
+  return active;
+}
+
 export {
   isRegistered,
   registerUser,
@@ -118,4 +131,5 @@ export {
   checkLevelUp,
   useLimit,
   getMaxHP,
+  getActiveWorkers,
 };
