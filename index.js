@@ -221,9 +221,9 @@ async function startBot() {
           if (!newName)
             return sock.sendMessage(from, { text: "Masukkan nama" });
 
-          const user = await getUser(sender);
-          user.name = newName;
-          await saveUser(sender, user);
+          const setname = await getUser(sender);
+          setname.name = newName;
+          await saveUser(sender, setname);
 
           return sock.sendMessage(from, { text: "Nama berhasil diubah." });
 
