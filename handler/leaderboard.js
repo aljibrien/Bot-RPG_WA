@@ -1,7 +1,7 @@
 import supabase from "../supabase.js";
 
 export default async (sock, from) => {
-  const { data } = await supabase.from("users").select("id,name, gold, bank");
+  const { data } = await supabase.from("users").select("id, name, gold, bank");
 
   if (!data || data.length === 0)
     return sock.sendMessage(from, { text: "Belum ada player." });
@@ -9,6 +9,7 @@ export default async (sock, from) => {
   const sorted = data
     .map((u) => ({
       id: u.id,
+      name: u.name,
       total: u.gold + u.bank,
     }))
     .sort((a, b) => b.total - a.total)
