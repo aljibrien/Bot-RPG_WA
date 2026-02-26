@@ -32,6 +32,7 @@ async function registerUser(id, name) {
 
     lastrob: 0,
     robend: 0,
+    pendinggold: 0,
     lastfishing: 0,
     lastdungeon: 0,
     dungeonend: 0,

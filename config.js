@@ -17,7 +17,7 @@ const config = {
     max: 2,
     price: 10000,
   },
-  owner: "274031966220534@lid",
+  owner: "274031966220534",
 };
 
 export default config;

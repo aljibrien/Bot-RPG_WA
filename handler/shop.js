@@ -1,4 +1,5 @@
 import { getUser, saveUser } from "../utils.js";
+import config from "../config.js";
 
 export default async (sock, from, sender, msg, args) => {
   const user = await getUser(sender);
