@@ -1,4 +1,4 @@
-import { getUser, saveUser, useLimit, getMaxHP } from "../utils.js";
+import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
 import config from "../config.js";
 
 function format(ms) {
