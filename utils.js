@@ -12,7 +12,7 @@ async function isRegistered(id) {
 }
 
 // REGISTER USER
-async function registerUser(id) {
+async function registerUser(id, name) {
   const { error } = await supabase.from("users").insert({
     id,
     name: name,
