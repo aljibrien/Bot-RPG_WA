@@ -3,9 +3,13 @@ import config from "../config.js";
 
 export default async (sock, from, sender, msg, args) => {
   const user = await getUser(sender);
-  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!user)
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
 
   const now = Date.now();
+  const duration = 3600000;
   const item = args[1]?.toLowerCase();
 
   if (!item) {
@@ -39,7 +43,6 @@ export default async (sock, from, sender, msg, args) => {
       return sock.sendMessage(from, { text: "Gold tidak cukup." });
 
     user.gold -= 250;
-    const duration = 3600000;
     user.shielduntil =
       user.shielduntil > now ? user.shielduntil + duration : now + duration;
   } else if (item === "heal") {

@@ -1,5 +1,4 @@
 import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
-import config from "../config.js";
 
 function format(ms) {
   const s = Math.ceil(ms / 1000);
@@ -9,18 +8,13 @@ function format(ms) {
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
-    return sock.sendMessage(from, { text: "Ketik .daftar dulu" });
+    return sock.sendMessage(from, {
+      text: "Daftar dulu bro, jangan nyelonong.",
+    });
   }
 
   const now = Date.now();
   const activeWorkers = getActiveWorkers(user);
-
-  // ================= WORKERS CHECK =================
-  if (activeWorkers >= user.workers) {
-    return sock.sendMessage(from, {
-      text: "Semua worker sedang bekerja.",
-    });
-  }
 
   // ================= REST CHECK =================
   if (user.restend && user.restend > now) {
@@ -43,11 +37,10 @@ export default async (sock, from, sender, msg) => {
     });
   }
 
-  // ================= COOLDOWN =================
-  const cooldown = config.cooldown.fishing - (now - user.lastfishing);
-  if (cooldown > 0) {
+  // ================= WORKERS CHECK =================
+  if (activeWorkers >= user.workers) {
     return sock.sendMessage(from, {
-      text: `Mancing masih cooldown.\nTunggu ${format(cooldown)}`,
+      text: "Semua worker sedang bekerja.",
     });
   }
 

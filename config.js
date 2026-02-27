@@ -1,9 +1,7 @@
 const config = {
   prefix: ".",
   cooldown: {
-    fishing: 60000,
     rob: 1800000,
-    dungeon: 300000,
   },
 
   premiumBoost: {

@@ -8,7 +8,9 @@ function format(ms) {
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
-    return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
   }
 
   const now = Date.now();

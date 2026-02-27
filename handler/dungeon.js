@@ -5,7 +5,6 @@ import {
   getMaxHP,
   getActiveWorkers,
 } from "../utils.js";
-import config from "../config.js";
 
 function format(ms) {
   const s = Math.ceil(ms / 1000);
@@ -15,18 +14,13 @@ function format(ms) {
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
-    return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
   }
 
   const now = Date.now();
   const activeWorkers = getActiveWorkers(user);
-
-  // ================= WORKERS CHECK =================
-  if (activeWorkers >= user.workers) {
-    return sock.sendMessage(from, {
-      text: "Semua worker sedang bekerja.",
-    });
-  }
 
   // ================= REST CHECK =================
   if (user.restend && user.restend > now) {
@@ -74,20 +68,16 @@ export default async (sock, from, sender, msg) => {
     );
   }
 
-  // ================= COOLDOWN =================
-  const cooldown = config.cooldown.dungeon - (now - user.lastdungeon);
-  if (cooldown > 0) {
-    return sock.sendMessage(
-      from,
-      {
-        text: `Dungeon masih cooldown.\nTunggu ${format(cooldown)}`,
-      },
-      { quoted: msg },
-    );
+  // ================= WORKERS CHECK =================
+  if (activeWorkers >= user.workers) {
+    return sock.sendMessage(from, {
+      text: "Semua worker sedang bekerja.",
+    });
   }
 
   // ================= START DUNGEON =================
-  user.dungeonend = now + Math.floor(Math.random() * 4 + 1) * 60000;
+  const duration = (Math.floor(Math.random() * 6) + 5) * 60000;
+  user.dungeonend = now + duration;
 
   useLimit(user);
   await saveUser(sender, user);

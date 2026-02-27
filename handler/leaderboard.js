@@ -1,7 +1,14 @@
 import supabase from "../supabase.js";
+import { getUser } from "../utils.js";
 
 export default async (sock, from) => {
   const { data } = await supabase.from("users").select("id, name, gold, bank");
+  const user = await getUser(sender);
+  if (!user) {
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
+  }
 
   if (!data || data.length === 0)
     return sock.sendMessage(from, { text: "Belum ada player." });

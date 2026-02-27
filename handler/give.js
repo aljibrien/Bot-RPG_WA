@@ -13,7 +13,10 @@ export default async (sock, from, sender, msg, args) => {
   const giver = await getUser(sender);
   const receiver = await getUser(target);
 
-  if (!giver) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!giver)
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
   if (!receiver)
     return sock.sendMessage(from, { text: "Target belum daftar." });
 

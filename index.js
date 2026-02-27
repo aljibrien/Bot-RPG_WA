@@ -33,9 +33,7 @@ import rest from "./handler/rest.js";
 import addprem from "./handler/addprem.js";
 import hackbank from "./handler/hackbank.js";
 
-// =======================
 // EXPRESS SERVER
-// =======================
 
 const app = express();
 app.get("/", (req, res) => res.send("Bot RPG is running."));
@@ -46,9 +44,7 @@ app.listen(process.env.PORT || 3000, () => {
 process.on("unhandledRejection", console.error);
 process.on("uncaughtException", console.error);
 
-// =======================
 // START BOT
-// =======================
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("./session");
@@ -67,9 +63,7 @@ async function startBot() {
 
   sock.ev.on("creds.update", saveCreds);
 
-  // =======================
   // CONNECTION INFO
-  // =======================
 
   sock.ev.on("connection.update", ({ connection, lastDisconnect, qr }) => {
     if (qr) {
@@ -93,9 +87,7 @@ async function startBot() {
     }
   });
 
-  // =======================
   // MESSAGE HANDLER
-  // =======================
 
   sock.ev.on("messages.upsert", async ({ messages }) => {
     try {
@@ -124,9 +116,7 @@ async function startBot() {
       const args = text.trim().split(/\s+/);
       const command = args[0].slice(1).toLowerCase();
 
-      // ======================
       // REGISTER CHECK
-      // ======================
 
       if (command !== "daftar" && !(await isRegistered(sender))) {
         return sock.sendMessage(from, {
@@ -156,21 +146,15 @@ async function startBot() {
 
       // ANTI SPAM
       if (userData) {
-        if (now - userData.lastcommand < 1000) {
-          userData.spamcount++;
-          if (userData.spamcount >= 5) {
-            return sock.sendMessage(from, {
-              text: "Spam terdeteksi. Pelan-pelan.",
-            });
-          }
-        } else {
-          userData.spamcount = 0;
+        if (now - userData.lastcommand < 1500) {
+          return sock.sendMessage(from, {
+            text: "Terlalu cepat.",
+          });
         }
 
         userData.lastcommand = now;
         await saveUser(sender, userData);
       }
-
       // ======================
       // COMMAND SWITCH
       // ======================

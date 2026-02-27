@@ -123,6 +123,7 @@ function getActiveWorkers(user) {
   if (user.fishingend && user.fishingend > now) active++;
   if (user.dungeonend && user.dungeonend > now) active++;
   if (user.robend && user.robend > now) active++;
+  if (user.hackend && user.hackend > now) active++;
 
   return active;
 }

@@ -10,7 +10,9 @@ import config from "../config.js";
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
-    return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
   }
 
   const now = Date.now();
@@ -134,10 +136,14 @@ export default async (sock, from, sender, msg) => {
   if (user.robend && user.robend <= now) {
     if (user.pendinggold && user.pendinggold > 0) {
       user.gold += user.pendinggold;
-      message += `🕵️ Rob berhasil!\n+${user.pendinggold} gold\n\n`;
+      message += `🕵️ Misi beres!
+Dompet target jebol 😈
++${user.pendinggold} gold masuk kantong\n\n`;
       user.pendinggold = 0;
     } else {
-      message += `🕵️ Rob gagal! HP sudah berkurang.\n\n`;
+      message += `🕵️ Ketahuan satpam!
+Kabur sambil ngos-ngosan 🏃‍♂️
+HP lu yang jadi korban 😭\n\n`;
     }
 
     user.robend = 0;
@@ -147,11 +153,14 @@ export default async (sock, from, sender, msg) => {
   if (user.hackend && user.hackend <= now) {
     if (user.pendinggold && user.pendinggold > 0) {
       user.gold += user.pendinggold;
-      message += `💻 Hack berhasil!
-+${user.pendinggold} gold\n\n`;
+      message += `💻 Sistem jebol!
+Firewall nangis di pojokan 😂
++${user.pendinggold} gold berhasil dicuri\n\n`;
       user.pendinggold = 0;
     } else {
-      message += `💻 Hack gagal! HP sudah berkurang.\n\n`;
+      message += `💻 Akses ditolak!
+IP ke-detect, panik sendiri 🤡
+HP lu kena imbasnya\n\n`;
     }
 
     user.hackend = 0;
@@ -160,7 +169,7 @@ export default async (sock, from, sender, msg) => {
   // ================= TIDAK ADA YANG BISA DI CLAIM =================
   if (!message) {
     return sock.sendMessage(from, {
-      text: "Belum ada yang bisa di-claim.",
+      text: "Belum ada hasil. Sabar dikit, jangan napsu amat.",
     });
   }
 

@@ -2,7 +2,10 @@ import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
 
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
-  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!user)
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
 
   const now = Date.now();
 
@@ -45,7 +48,7 @@ export default async (sock, from, sender, msg) => {
   if (target === sender)
     return sock.sendMessage(
       from,
-      { text: "Rob diri sendiri? Ngaco." },
+      { text: "Rob diri sendiri? Ngaco" },
       { quoted: msg },
     );
 
@@ -59,7 +62,7 @@ export default async (sock, from, sender, msg) => {
     );
 
   if (victim.gold <= 0)
-    return sock.sendMessage(from, { text: "Target miskin." }, { quoted: msg });
+    return sock.sendMessage(from, { text: "Target miskin " }, { quoted: msg });
 
   if (Date.now() < victim.shielduntil)
     return sock.sendMessage(
@@ -92,9 +95,10 @@ export default async (sock, from, sender, msg) => {
   return sock.sendMessage(
     from,
     {
-      text: `🕵️ Worker mulai merampok...
-Durasi 2 menit.
-Ketik .claim setelah selesai.`,
+      text: `🕵️ Operasi dimulai...
+Target lagi dipantau, Semoga nggak ketahuan 😏
+Tunggu ${Math.floor((user.robend - now) / 60000)} menit.
+Ketik .claim buat lihat hasilnya.`,
     },
     { quoted: msg },
   );

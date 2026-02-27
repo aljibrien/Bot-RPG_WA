@@ -9,7 +9,10 @@ const price = {
 
 export default async (sock, from, sender, msg, args) => {
   const user = await getUser(sender);
-  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!user)
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
 
   const type = args[1]?.toLowerCase();
 

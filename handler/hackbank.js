@@ -1,12 +1,21 @@
-import { getUser, saveUser, useLimit, isPremium } from "../utils.js";
+import {
+  getUser,
+  saveUser,
+  useLimit,
+  isPremium,
+  getActiveWorkers,
+} from "../utils.js";
 import config from "../config.js";
 
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
-  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!user)
+    return sock.sendMessage(from, {
+      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+    });
 
   const now = Date.now();
-
+  const activeWorkers = getActiveWorkers(user);
   // ================= HP CHECK =================
   if (user.hp < 50)
     return sock.sendMessage(from, {
@@ -14,7 +23,7 @@ export default async (sock, from, sender, msg) => {
     });
 
   // ================= COOLDOWN =================
-  const cooldown = config.cooldown.rob; // 30 menit
+  const cooldown = config.cooldown.rob;
   if (now - (user.lasthack || 0) < cooldown)
     return sock.sendMessage(from, {
       text: "Hack masih cooldown.",
@@ -48,14 +57,16 @@ export default async (sock, from, sender, msg) => {
   if (victim.bank <= 0)
     return sock.sendMessage(from, { text: "Bank target kosong." });
 
-  // ================= SHIELD CHECK =================
-  if (Date.now() < victim.shielduntil)
+  // ================= WORKERS CHECK =================
+  if (activeWorkers >= user.workers) {
     return sock.sendMessage(from, {
-      text: "Target sedang dilindungi shield.",
+      text: "Semua worker sedang bekerja.",
     });
+  }
 
   // ================= START HACK =================
-  user.hackend = now + 3 * 60 * 1000;
+  const duration = (Math.floor(Math.random() * 11) + 10) * 60 * 1000;
+  user.hackend = now + duration;
   user.lasthack = now;
 
   let chance = 0.4;
@@ -96,7 +107,7 @@ export default async (sock, from, sender, msg) => {
     from,
     {
       text: `💻 Hack dimulai...
-Durasi 3 menit.
+Durasi ${Math.floor(duration / 60000)} menit.
 Ketik .claim setelah selesai.`,
     },
     { quoted: msg },
