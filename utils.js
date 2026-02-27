@@ -32,7 +32,11 @@ async function registerUser(id, name) {
 
     lastrob: 0,
     robend: 0,
+    lasthack: 0,
+    hackend: 0,
+    firewalluntil: 0,
     pendinggold: 0,
+
     lastfishing: 0,
     lastdungeon: 0,
     dungeonend: 0,

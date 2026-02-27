@@ -31,7 +31,9 @@ export default async (sock, from, sender, msg) => {
 
   // ================= TARGET =================
   const target =
-    msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+    msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]?.split(
+      "@",
+    )[0];
 
   if (!target)
     return sock.sendMessage(

@@ -10,7 +10,13 @@ import config from "./config.js";
 import qrcode from "qrcode-terminal";
 import express from "express";
 
-import { isRegistered, getUser, saveUser, isPremium } from "./utils.js";
+import {
+  isRegistered,
+  getUser,
+  saveUser,
+  isPremium,
+  useLimit,
+} from "./utils.js";
 
 import register from "./handler/register.js";
 import fish from "./handler/fish.js";
@@ -25,6 +31,7 @@ import sell from "./handler/sell.js";
 import claim from "./handler/claim.js";
 import rest from "./handler/rest.js";
 import addprem from "./handler/addprem.js";
+import hackbank from "./handler/hackbank.js";
 
 // =======================
 // EXPRESS SERVER
@@ -139,10 +146,7 @@ async function startBot() {
       }
 
       // LIMIT CHECK
-      if (
-        userData &&
-        !["daftar", "help", "lb", "shop", "me", "claim"].includes(command)
-      ) {
+      if (userData) {
         if (!isPremium(userData) && userData.limit <= 0) {
           return sock.sendMessage(from, {
             text: "Limit harian habis. Upgrade premium.",
@@ -220,6 +224,9 @@ async function startBot() {
         case "addprem":
           return addprem(sock, from, sender, msg, args);
 
+        case "hackbank":
+          return hackbank(sock, from, sender, msg);
+
         case "setname":
           const newName = args.slice(1).join(" ");
           if (!newName)
@@ -227,6 +234,7 @@ async function startBot() {
 
           const setname = await getUser(sender);
           setname.name = newName;
+          useLimit(setname);
           await saveUser(sender, setname);
 
           return sock.sendMessage(from, { text: "Nama berhasil diubah." });
@@ -240,15 +248,16 @@ async function startBot() {
 ╰┈➤ .dungeon
 ╰┈➤ .claim
 ╰┈➤ .rob @tag
+╰┈➤ .hackbank @tag
 ╰┈➤ .rest
 ──── ୨୧ BANK ୨୧ ────
-╰┈➤ .deposit 100
-╰┈➤ .withdraw 100
-╰┈➤ .sell kecil 10
-╰┈➤ .sell all
+╰┈➤ .deposit
+╰┈➤ .withdraw
+╰┈➤ .sell
 ╰┈➤ .shop
 ──── ୨୧ User ୨୧ ────
 ╰┈➤ .me
+╰┈➤ .setname
 ╰┈➤ .give @tag
 ╰┈➤ .lb`,
           });
@@ -265,6 +274,7 @@ lalu perintahnya dibawah ini:
 .dungeon -> untuk dapat gold + exp
 .claim -> ambil hadiah/kegiatan apapun
 .rob @tag -> Mencuri gold orang lain
+.hackbank @tag -> Mencuri gold di bank orang lain
 .rest -> untuk memulihkan darah
 ──── ୨୧ BANK ୨୧ ────
 .deposit [berapa] -> menyimpan uang ke bank 100 misalnya

@@ -1,10 +1,11 @@
-import { getUser, saveUser } from "../utils.js";
+import { getUser, saveUser, useLimit } from "../utils.js";
 import config from "../config.js";
 
 export default async (sock, from, sender, msg, args) => {
   const user = await getUser(sender);
   if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
+  const now = Date.now();
   const item = args[1]?.toLowerCase();
 
   if (!item) {
@@ -17,7 +18,8 @@ export default async (sock, from, sender, msg, args) => {
 💰 Gold kamu: ${user.gold}
 
 .shop limit - 150 gold (+5 limit)
-.shop shield - 350 gold (anti rob 1 jam)
+.shop bodyguard - 350 gold (anti rob 1 jam)
+.shop firewall - 500 gold (anti hack 1 jam)
 .shop heal - 100 gold (+50 HP)
 .shop dungeon - 50 gold (reset cooldown)
 .shop worker - 10000 gold (+1 worker)`,
@@ -32,12 +34,14 @@ export default async (sock, from, sender, msg, args) => {
 
     user.gold -= 150;
     user.limit += 5;
-  } else if (item === "shield") {
-    if (user.gold < 350)
+  } else if (item === "bodyguard") {
+    if (user.gold < 250)
       return sock.sendMessage(from, { text: "Gold tidak cukup." });
 
-    user.gold -= 350;
-    user.shielduntil = Date.now() + 3600000;
+    user.gold -= 250;
+    const duration = 3600000;
+    user.shielduntil =
+      user.shielduntil > now ? user.shielduntil + duration : now + duration;
   } else if (item === "heal") {
     if (user.gold < 100)
       return sock.sendMessage(from, { text: "Gold tidak cukup." });
@@ -59,11 +63,18 @@ export default async (sock, from, sender, msg, args) => {
 
     user.gold -= config.worker.price;
     user.workers += 1;
+  } else if (item === "firewall") {
+    if (user.gold < 400)
+      return sock.sendMessage(from, { text: "Gold tidak cukup." });
+
+    user.gold -= 400;
+    user.firewalluntil =
+      user.firewalluntil > now ? user.firewalluntil + duration : now + duration;
   } else {
     return sock.sendMessage(from, { text: "Item tidak ditemukan." });
   }
 
+  useLimit(user);
   await saveUser(sender, user);
-
   return sock.sendMessage(from, { text: `Pembelian ${item} berhasil.` });
 };

@@ -43,22 +43,38 @@ export default async (sock, from, sender, msg) => {
       if (chance < 0) chance = 0;
     }
 
-    const amount = premium ? config.premiumBoost.fishAmount : 1;
+    const amount = 1;
 
     let rarity = "";
 
-    if (chance < 0.6) {
-      user.kecil += amount;
-      rarity = "Ikan kecil";
-    } else if (chance < 0.9) {
-      user.sedang += amount;
-      rarity = "Ikan sedang";
-    } else if (chance < 0.99) {
-      user.besar += amount;
-      rarity = "Ikan besar";
+    if (!premium) {
+      if (chance < 0.5) {
+        user.kecil++;
+        rarity = "Ikan kecil";
+      } else if (chance < 0.8) {
+        user.sedang++;
+        rarity = "Ikan sedang";
+      } else if (chance < 0.97) {
+        user.besar++;
+        rarity = "Ikan besar";
+      } else {
+        user.legend++;
+        rarity = "Ikan LEGEND ✨";
+      }
     } else {
-      user.legend += amount;
-      rarity = "Ikan LEGEND ✨";
+      if (chance < 0.4) {
+        user.kecil++;
+        rarity = "Ikan kecil";
+      } else if (chance < 0.75) {
+        user.sedang++;
+        rarity = "Ikan sedang";
+      } else if (chance < 0.95) {
+        user.besar++;
+        rarity = "Ikan besar";
+      } else {
+        user.legend++;
+        rarity = "Ikan LEGEND ✨";
+      }
     }
 
     user.fishingend = 0;
@@ -125,6 +141,20 @@ export default async (sock, from, sender, msg) => {
     }
 
     user.robend = 0;
+  }
+
+  // ================= 💻 HACK CLAIM =================
+  if (user.hackend && user.hackend <= now) {
+    if (user.pendinggold && user.pendinggold > 0) {
+      user.gold += user.pendinggold;
+      message += `💻 Hack berhasil!
++${user.pendinggold} gold\n\n`;
+      user.pendinggold = 0;
+    } else {
+      message += `💻 Hack gagal! HP sudah berkurang.\n\n`;
+    }
+
+    user.hackend = 0;
   }
 
   // ================= TIDAK ADA YANG BISA DI CLAIM =================
