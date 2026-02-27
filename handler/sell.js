@@ -23,8 +23,6 @@ export default async (sock, from, sender, msg, args) => {
         text: `── .✦
 🎣 SELL LIST:
 
-💰 Gold kamu: ${user.gold}
-
 .sell kecil 1 (gold +${price.kecil})
 .sell sedang 1 (gold +${price.sedang})
 .sell besar 1 (gold +${price.besar})

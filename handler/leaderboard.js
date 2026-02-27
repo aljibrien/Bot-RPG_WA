@@ -1,7 +1,7 @@
 import supabase from "../supabase.js";
 import { getUser } from "../utils.js";
 
-export default async (sock, from) => {
+export default async (sock, from, sender, msg) => {
   const { data } = await supabase.from("users").select("id, name, gold, bank");
   const user = await getUser(sender);
   if (!user) {

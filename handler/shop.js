@@ -20,6 +20,7 @@ export default async (sock, from, sender, msg, args) => {
 🛒 SHOP LIST:
 
 💰 Gold kamu: ${user.gold}
+🏦 Bank: ${user.bank}
 
 .shop limit - 150 gold (+5 limit)
 .shop bodyguard - 350 gold (anti rob 1 jam)

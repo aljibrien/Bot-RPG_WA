@@ -192,7 +192,7 @@ async function startBot() {
           return user(sock, from, sender, msg);
 
         case "lb":
-          return leaderboard(sock, from);
+          return leaderboard(sock, from, sender, msg);
 
         case "shop":
           return shop(sock, from, sender, msg, args);
