@@ -7,10 +7,7 @@ import {
 } from "../utils.js";
 import config from "../config.js";
 
-// ======================
-// CORE CLAIM LOGIC
-// ======================
-export async function processClaim(user) {
+export async function processClaim(user, isAuto = false) {
   const now = Date.now();
   const premium = isPremium(user);
   let message = "";
@@ -19,7 +16,9 @@ export async function processClaim(user) {
   if (user.restend && user.restend <= now) {
     user.hp = getMaxHP(user);
     user.restend = 0;
-    message += `🛏️ Istirahat selesai.\nHP kembali penuh.\n\n`;
+
+    message += `🛏️ Istirahat selesai.
+HP kembali penuh.\n\n`;
   }
 
   // ===== FISH =====
@@ -31,42 +30,25 @@ export async function processClaim(user) {
       if (chance < 0) chance = 0;
     }
 
-    let rarity = "";
+    let rarity;
 
     if (!premium) {
-      if (chance < 0.5) {
-        user.kecil++;
-        rarity = "Ikan kecil";
-      } else if (chance < 0.8) {
-        user.sedang++;
-        rarity = "Ikan sedang";
-      } else if (chance < 0.97) {
-        user.besar++;
-        rarity = "Ikan besar";
-      } else {
-        user.legend++;
-        rarity = "Ikan LEGEND ✨";
-      }
+      if (chance < 0.5) ((rarity = "Ikan kecil"), user.kecil++);
+      else if (chance < 0.8) ((rarity = "Ikan sedang"), user.sedang++);
+      else if (chance < 0.97) ((rarity = "Ikan besar"), user.besar++);
+      else ((rarity = "Ikan LEGEND ✨"), user.legend++);
     } else {
-      if (chance < 0.4) {
-        user.kecil++;
-        rarity = "Ikan kecil";
-      } else if (chance < 0.75) {
-        user.sedang++;
-        rarity = "Ikan sedang";
-      } else if (chance < 0.95) {
-        user.besar++;
-        rarity = "Ikan besar";
-      } else {
-        user.legend++;
-        rarity = "Ikan LEGEND ✨";
-      }
+      if (chance < 0.4) ((rarity = "Ikan kecil"), user.kecil++);
+      else if (chance < 0.75) ((rarity = "Ikan sedang"), user.sedang++);
+      else if (chance < 0.95) ((rarity = "Ikan besar"), user.besar++);
+      else ((rarity = "Ikan LEGEND ✨"), user.legend++);
     }
 
     user.fishingend = 0;
     user.lastfishing = now;
 
-    message += `🎣 ${rarity}\n+1 ekor\n\n`;
+    message += `🎣 ${rarity}
++1 ekor\n\n`;
   }
 
   // ===== DUNGEON =====
@@ -90,7 +72,13 @@ export async function processClaim(user) {
 
       const leveledUp = checkLevelUp(user);
 
-      message += `🏰 Menang lawan monster!\n+${gold} gold\n+${expGain} exp`;
+      message += isAuto
+        ? `🏰 Menang lawan monster sebelumnya!
++${gold} gold
++${expGain} exp`
+        : `🏰 Menang lawan monster!
++${gold} gold
++${expGain} exp`;
 
       if (leveledUp) {
         user.hp = getMaxHP(user);
@@ -99,7 +87,9 @@ export async function processClaim(user) {
     } else if (event < 0.9) {
       const damage = Math.floor(Math.random() * 30) + 10;
       user.hp = Math.max(user.hp - damage, 0);
-      message += `🏰 Kena trap!\n-HP ${damage}`;
+
+      message += `🏰 Kena trap!
+-HP ${damage}`;
     } else {
       const baseGold = Math.floor(Math.random() * 201) + 500;
       const gold = premium
@@ -107,7 +97,9 @@ export async function processClaim(user) {
         : baseGold;
 
       user.gold += gold;
-      message += `🏰 LUCKY ROOM!\n+${gold} gold`;
+
+      message += `🏰 LUCKY ROOM!
++${gold} gold`;
     }
 
     user.dungeonend = 0;
@@ -119,10 +111,14 @@ export async function processClaim(user) {
   if (user.robend && user.robend <= now) {
     if (user.pendinggold && user.pendinggold > 0) {
       user.gold += user.pendinggold;
-      message += `🕵️ Misi beres!\n+${user.pendinggold} gold\n\n`;
+
+      message += `🕵️ Misi beres!
++${user.pendinggold} gold\n\n`;
+
       user.pendinggold = 0;
     } else {
-      message += `🕵️ Ketahuan!\nHP lu yang jadi korban 😭\n\n`;
+      message += `🕵️ Ketahuan!
+HP lu yang jadi korban 😭\n\n`;
     }
 
     user.robend = 0;
@@ -132,10 +128,14 @@ export async function processClaim(user) {
   if (user.hackend && user.hackend <= now) {
     if (user.pendinggold && user.pendinggold > 0) {
       user.gold += user.pendinggold;
-      message += `💻 Sistem jebol!\n+${user.pendinggold} gold\n\n`;
+
+      message += `💻 Sistem jebol!
++${user.pendinggold} gold\n\n`;
+
       user.pendinggold = 0;
     } else {
-      message += `💻 Akses ditolak!\nHP lu kena imbasnya\n\n`;
+      message += `💻 Akses ditolak!
+HP lu kena imbasnya\n\n`;
     }
 
     user.hackend = 0;
@@ -151,7 +151,7 @@ export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
-  const result = await processClaim(user);
+  const result = await processClaim(user, false);
 
   if (!result)
     return sock.sendMessage(from, {
@@ -159,5 +159,6 @@ export default async (sock, from, sender, msg) => {
     });
 
   await saveUser(sender, user);
+
   return sock.sendMessage(from, { text: result }, { quoted: msg });
 };

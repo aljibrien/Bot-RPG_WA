@@ -14,38 +14,45 @@ export default async (sock, from, sender, msg) => {
     });
   }
 
-  // ================= AUTO CLAIM =================
-  const auto = await processClaim(user);
+  const now = Date.now();
 
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user, true);
   if (auto) {
     await saveUser(sender, user);
-    await sock.sendMessage(from, { text: auto }, { quoted: msg });
   }
 
-  let autoText = "";
-
-  if (auto) {
-    autoText = auto + "\n\n";
-  }
-
-  const now = Date.now();
   const activeWorkers = getActiveWorkers(user);
 
-  // ================= REST CHECK =================
+  // ================= LAGI REST =================
   if (user.restend && user.restend > now) {
     return sock.sendMessage(from, {
       text: "Kamu sedang istirahat di hospital. Tidak bisa mancing.",
     });
   }
 
-  // ================= REST SELESAI BELUM CLAIM =================
-  if (user.restend && user.restend <= now) {
+  // ================= LAGI DUNGEON =================
+  if (user.dungeonend && user.dungeonend > now) {
     return sock.sendMessage(from, {
-      text: "Istirahat kamu sudah selesai. Claim dulu biar HP penuh.",
+      text: "Masih di dungeon. Selesaikan dulu sebelum mancing.",
     });
   }
 
-  // ================= HP 0 CHECK =================
+  // ================= LAGI ROB =================
+  if (user.robend && user.robend > now) {
+    return sock.sendMessage(from, {
+      text: "Lagi operasi rob. Tunggu selesai dulu.",
+    });
+  }
+
+  // ================= LAGI HACK =================
+  if (user.hackend && user.hackend > now) {
+    return sock.sendMessage(from, {
+      text: "Lagi hack bank. Tunggu selesai dulu.",
+    });
+  }
+
+  // ================= HP CHECK =================
   if (user.hp <= 0) {
     return sock.sendMessage(from, {
       text: "HP kamu 0. Istirahat dulu di hospital.",
@@ -66,21 +73,22 @@ export default async (sock, from, sender, msg) => {
     });
   }
 
-  // ================= START FISHING =================
-  user.fishingend = now + Math.floor(Math.random() * 3 + 1) * 60000;
+  // ================= START FISH =================
+  const duration = (Math.floor(Math.random() * 3) + 1) * 60000;
+  user.fishingend = now + duration;
 
   useLimit(user);
   await saveUser(sender, user);
 
-  return sock.sendMessage(
-    from,
-    {
-      text:
-        autoText +
-        `🎣 Mulai mancing!\nDurasi ${format(
-          user.fishingend - now,
-        )}\nKetik .claim untuk ambil hasil.`,
-    },
-    { quoted: msg },
-  );
+  let text = "";
+
+  if (auto) {
+    text += auto + "\n\n";
+  }
+
+  text += `🎣 Mulai mancing!
+Durasi ${format(duration)}
+Ketik .claim untuk ambil hasil.`;
+
+  return sock.sendMessage(from, { text }, { quoted: msg });
 };

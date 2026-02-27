@@ -15,22 +15,38 @@ export default async (sock, from, sender, msg) => {
       text: "Ketik .daftar dulu bro, jangan nyelonong.",
     });
 
-  // ================= AUTO CLAIM =================
-  const auto = await processClaim(user);
-
-  if (auto) {
-    await saveUser(sender, user);
-    await sock.sendMessage(from, { text: auto }, { quoted: msg });
-  }
-
-  let autoText = "";
-
-  if (auto) {
-    autoText = auto + "\n\n";
-  }
-
   const now = Date.now();
+
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user, true);
+  if (auto) await saveUser(sender, user);
+
   const activeWorkers = getActiveWorkers(user);
+
+  // ================= LAGI REST =================
+  if (user.restend && user.restend > now)
+    return sock.sendMessage(from, {
+      text: "Kamu sedang di hospital.",
+    });
+
+  // ================= LAGI DUNGEON =================
+  if (user.dungeonend && user.dungeonend > now)
+    return sock.sendMessage(from, {
+      text: "Masih di dungeon.",
+    });
+
+  // ================= LAGI FISH =================
+  if (user.fishingend && user.fishingend > now)
+    return sock.sendMessage(from, {
+      text: "Masih mancing.",
+    });
+
+  // ================= LAGI ROB =================
+  if (user.robend && user.robend > now)
+    return sock.sendMessage(from, {
+      text: "Masih menjalankan rob.",
+    });
+
   // ================= HP CHECK =================
   if (user.hp < 50)
     return sock.sendMessage(from, {
@@ -44,21 +60,26 @@ export default async (sock, from, sender, msg) => {
       text: "Hack masih cooldown.",
     });
 
+  // ================= LEVEL CHECK =================
   if (user.level < 3)
     return sock.sendMessage(from, {
       text: "Minimal level 3 untuk bisa hack bank.",
     });
+
+  // ================= WORKER CHECK =================
+  if (activeWorkers >= user.workers)
+    return sock.sendMessage(from, {
+      text: "Semua worker sedang bekerja.",
+    });
+
   // ================= TARGET =================
   const target =
     msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]?.split(
       "@",
     )[0];
 
-  if (!target)
+  if (!target || target === sender)
     return sock.sendMessage(from, { text: "Tag target yang valid." });
-
-  if (target === sender)
-    return sock.sendMessage(from, { text: "Hack diri sendiri? Ngaco." });
 
   const victim = await getUser(target);
   if (!victim)
@@ -66,32 +87,21 @@ export default async (sock, from, sender, msg) => {
 
   if (victim.level < 2)
     return sock.sendMessage(from, {
-      text: "Dia Masih Pemulai coy jangan dihack.",
+      text: "Dia masih pemula, jangan dihack.",
     });
 
   if (victim.bank <= 0)
     return sock.sendMessage(from, { text: "Bank target kosong." });
 
-  // ================= WORKERS CHECK =================
-  if (activeWorkers >= user.workers) {
-    return sock.sendMessage(from, {
-      text: "Semua worker sedang bekerja.",
-    });
-  }
-
   // ================= START HACK =================
-  const duration = (Math.floor(Math.random() * 11) + 10) * 60 * 1000;
+  const duration = (Math.floor(Math.random() * 11) + 10) * 60000;
   user.hackend = now + duration;
   user.lasthack = now;
 
   let chance = 0.4;
 
   if (isPremium(user)) chance += 0.1;
-
-  // firewall reduce chance
-  if (Date.now() < (victim.firewalluntil || 0)) {
-    chance -= 0.3;
-  }
+  if (Date.now() < (victim.firewalluntil || 0)) chance -= 0.3;
 
   if (chance < 0) chance = 0;
   if (chance > 0.9) chance = 0.9;
@@ -101,17 +111,15 @@ export default async (sock, from, sender, msg) => {
   if (success) {
     const percent = Math.random() * 0.15 + 0.1;
     let steal = Math.floor(victim.bank * percent);
-
     if (steal > 5000) steal = 5000;
 
     victim.bank -= steal;
     victim.underhackuntil = user.hackend;
-    user.pendinggold = (user.pendinggold || 0) + steal;
+    user.pendinggold = steal;
 
     await saveUser(target, victim);
   } else {
     user.hp = Math.max(user.hp - 40, 0);
-
     const fine = Math.floor(user.gold * 0.1);
     user.gold -= fine;
   }
@@ -119,15 +127,13 @@ export default async (sock, from, sender, msg) => {
   useLimit(user);
   await saveUser(sender, user);
 
-  return sock.sendMessage(
-    from,
-    {
-      text:
-        autoText +
-        `💻 Hack dimulai...
+  let text = "";
+
+  if (auto) text += auto + "\n\n";
+
+  text += `💻 Hack dimulai...
 Durasi ${Math.floor(duration / 60000)} menit.
-Ketik .claim setelah selesai.`,
-    },
-    { quoted: msg },
-  );
+Ketik .claim setelah selesai.`;
+
+  return sock.sendMessage(from, { text }, { quoted: msg });
 };

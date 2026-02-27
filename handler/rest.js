@@ -1,4 +1,5 @@
 import { getUser, saveUser, getMaxHP, isPremium } from "../utils.js";
+import { processClaim } from "./claim.js";
 
 function format(ms) {
   const s = Math.ceil(ms / 1000);
@@ -7,55 +8,62 @@ function format(ms) {
 
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
-  if (!user) {
-    return sock.sendMessage(from, {
-      text: "Ketik .daftar dulu bro, jangan nyelonong.",
-    });
-  }
+  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
 
   const now = Date.now();
-  const maxHP = getMaxHP(user);
-  const premium = isPremium(user);
 
-  // ================= MASIH REST =================
-  if (user.restend && user.restend > now) {
-    return sock.sendMessage(from, {
-      text: `Masih istirahat.\nSisa ${format(user.restend - now)}`,
-    });
-  }
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user, true);
+  if (auto) await saveUser(sender, user);
 
   // ================= LAGI DUNGEON =================
-  if (user.dungeonend && user.dungeonend > now) {
+  if (user.dungeonend && user.dungeonend > now)
     return sock.sendMessage(from, {
       text: "Masih di dungeon. Selesaikan dulu sebelum ke hospital.",
     });
-  }
 
   // ================= LAGI MANCING =================
-  if (user.fishingend && user.fishingend > now) {
+  if (user.fishingend && user.fishingend > now)
     return sock.sendMessage(from, {
       text: "Masih mancing. Selesaikan dulu sebelum ke hospital.",
     });
-  }
+
+  // ================= LAGI ROB =================
+  if (user.robend && user.robend > now)
+    return sock.sendMessage(from, {
+      text: "Lagi operasi rob. Tunggu selesai dulu.",
+    });
+
+  // ================= LAGI HACK =================
+  if (user.hackend && user.hackend > now)
+    return sock.sendMessage(from, {
+      text: "Lagi hack bank. Tunggu selesai dulu.",
+    });
+
+  // ================= MASIH REST =================
+  if (user.restend && user.restend > now)
+    return sock.sendMessage(from, {
+      text: `Masih istirahat.\nSisa ${format(user.restend - now)}`,
+    });
 
   // ================= HP SUDAH FULL =================
-  if (user.hp >= maxHP) {
+  if (user.hp >= getMaxHP(user))
     return sock.sendMessage(from, {
-      text: "HP kamu sudah penuh. Gak perlu hospital.",
+      text: "HP sudah penuh.",
     });
-  }
 
-  // ================= DURASI REST =================
-  const restDuration = premium
-    ? 15 * 60 * 1000 // 15 menit premium
-    : 30 * 60 * 1000; // 30 menit free
+  // ================= START REST =================
+  const duration = isPremium(user) ? 15 * 60 * 1000 : 30 * 60 * 1000;
 
-  user.restend = now + restDuration;
+  user.restend = now + duration;
   await saveUser(sender, user);
 
-  return sock.sendMessage(from, {
-    text: `🛏️ Masuk hospital.
-Durasi: ${premium ? "15 menit (Premium)" : "30 menit"}
-Ketik .claim setelah selesai untuk full HP.`,
-  });
+  let text = "";
+  if (auto) text += auto + "\n\n";
+
+  text += `🛏️ Masuk hospital.
+Durasi ${format(duration)}
+Ketik .claim setelah selesai.`;
+
+  return sock.sendMessage(from, { text }, { quoted: msg });
 };

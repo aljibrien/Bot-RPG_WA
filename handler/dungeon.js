@@ -20,67 +20,41 @@ export default async (sock, from, sender, msg) => {
     });
   }
 
-  // ================= AUTO CLAIM =================
-  const auto = await processClaim(user);
+  const now = Date.now();
 
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user, true);
   if (auto) {
     await saveUser(sender, user);
-    await sock.sendMessage(from, { text: auto }, { quoted: msg });
   }
 
-  let autoText = "";
-
-  if (auto) {
-    autoText = auto + "\n\n";
-  }
-
-  const now = Date.now();
   const activeWorkers = getActiveWorkers(user);
 
   // ================= REST CHECK =================
   if (user.restend && user.restend > now) {
-    return sock.sendMessage(
-      from,
-      {
-        text: "Kamu sedang istirahat di hospital. Tidak bisa masuk dungeon.",
-      },
-      { quoted: msg },
-    );
+    return sock.sendMessage(from, {
+      text: "Kamu sedang istirahat di hospital. Tidak bisa masuk dungeon.",
+    });
   }
 
-  // ================= HP 0 CHECK =================
+  // ================= HP CHECK =================
   if (user.hp <= 0) {
-    return sock.sendMessage(
-      from,
-      {
-        text: "HP kamu 0. Istirahat dulu di hospital.",
-      },
-      { quoted: msg },
-    );
+    return sock.sendMessage(from, {
+      text: "HP kamu 0. Istirahat dulu di hospital.",
+    });
   }
 
-  const maxHP = getMaxHP(user);
-
-  // ================= LOW HP CHECK =================
   if (user.hp < 30) {
-    return sock.sendMessage(
-      from,
-      {
-        text: "HP minimal 30 untuk masuk dungeon. Istirahat dulu atau beli heal di shop",
-      },
-      { quoted: msg },
-    );
+    return sock.sendMessage(from, {
+      text: "HP minimal 30 untuk masuk dungeon.",
+    });
   }
 
   // ================= MASIH DI DUNGEON =================
   if (user.dungeonend && user.dungeonend > now) {
-    return sock.sendMessage(
-      from,
-      {
-        text: `Masih di dungeon.\nSisa ${format(user.dungeonend - now)}`,
-      },
-      { quoted: msg },
-    );
+    return sock.sendMessage(from, {
+      text: `Masih di dungeon.\nSisa ${format(user.dungeonend - now)}`,
+    });
   }
 
   // ================= WORKERS CHECK =================
@@ -97,15 +71,15 @@ export default async (sock, from, sender, msg) => {
   useLimit(user);
   await saveUser(sender, user);
 
-  return sock.sendMessage(
-    from,
-    {
-      text:
-        autoText +
-        `🏰 Masuk ke dungeon!\nDurasi ${format(
-          user.dungeonend - now,
-        )}\nKetik .claim untuk ambil hasil.`,
-    },
-    { quoted: msg },
-  );
+  let finalText = "";
+
+  if (auto) {
+    finalText += auto + "\n\n";
+  }
+
+  finalText += `🏰 Masuk ke dungeon!
+Durasi ${format(duration)}
+Ketik .claim untuk ambil hasil.`;
+
+  return sock.sendMessage(from, { text: finalText }, { quoted: msg });
 };

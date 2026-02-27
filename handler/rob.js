@@ -8,44 +8,49 @@ export default async (sock, from, sender, msg) => {
       text: "Ketik .daftar dulu bro, jangan nyelonong.",
     });
 
-  // ================= AUTO CLAIM =================
-  const auto = await processClaim(user);
-
-  if (auto) {
-    await saveUser(sender, user);
-    await sock.sendMessage(from, { text: auto }, { quoted: msg });
-  }
-
-  let autoText = "";
-
-  if (auto) {
-    autoText = auto + "\n\n";
-  }
-
   const now = Date.now();
 
-  // ================= HOSPITAL CHECK =================
-  if (user.restend && user.restend > now) {
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user, true);
+  if (auto) await saveUser(sender, user);
+
+  const activeWorkers = getActiveWorkers(user);
+
+  // ================= LAGI REST =================
+  if (user.restend && user.restend > now)
     return sock.sendMessage(from, {
       text: "Kamu sedang di hospital.",
     });
-  }
+
+  // ================= LAGI DUNGEON =================
+  if (user.dungeonend && user.dungeonend > now)
+    return sock.sendMessage(from, {
+      text: "Masih di dungeon.",
+    });
+
+  // ================= LAGI FISH =================
+  if (user.fishingend && user.fishingend > now)
+    return sock.sendMessage(from, {
+      text: "Masih mancing.",
+    });
+
+  // ================= LAGI HACK =================
+  if (user.hackend && user.hackend > now)
+    return sock.sendMessage(from, {
+      text: "Masih menjalankan hack.",
+    });
 
   // ================= HP CHECK =================
-  if (user.hp < 30) {
+  if (user.hp < 30)
     return sock.sendMessage(from, {
       text: "HP minimal 30 untuk merampok.",
     });
-  }
 
   // ================= WORKER CHECK =================
-  const activeWorkers = getActiveWorkers(user);
-
-  if (activeWorkers >= user.workers) {
+  if (activeWorkers >= user.workers)
     return sock.sendMessage(from, {
       text: "Semua worker sedang bekerja.",
     });
-  }
 
   // ================= TARGET =================
   const target =
@@ -53,43 +58,31 @@ export default async (sock, from, sender, msg) => {
       "@",
     )[0];
 
-  if (!target)
-    return sock.sendMessage(
-      from,
-      { text: "Tag target yang valid." },
-      { quoted: msg },
-    );
-
-  if (target === sender)
-    return sock.sendMessage(
-      from,
-      { text: "Rob diri sendiri? Ngaco" },
-      { quoted: msg },
-    );
+  if (!target || target === sender)
+    return sock.sendMessage(from, {
+      text: "Tag target yang valid.",
+    });
 
   const victim = await getUser(target);
-
   if (!victim)
-    return sock.sendMessage(
-      from,
-      { text: "Target belum terdaftar." },
-      { quoted: msg },
-    );
+    return sock.sendMessage(from, {
+      text: "Target belum terdaftar.",
+    });
 
   if (victim.gold <= 0)
-    return sock.sendMessage(from, { text: "Target miskin " }, { quoted: msg });
+    return sock.sendMessage(from, {
+      text: "Target miskin.",
+    });
 
-  if (Date.now() < victim.shielduntil)
-    return sock.sendMessage(
-      from,
-      { text: "Target sedang dilindungi." },
-      { quoted: msg },
-    );
+  if (Date.now() < (victim.shielduntil || 0))
+    return sock.sendMessage(from, {
+      text: "Target sedang dilindungi.",
+    });
 
   // ================= START ROB =================
-  user.robend = now + 2 * 60 * 1000; // 2 menit
+  const duration = 2 * 60 * 1000;
+  user.robend = now + duration;
 
-  // Tentukan hasil sekarang
   const success = Math.random() < 0.5;
 
   if (success) {
@@ -97,27 +90,23 @@ export default async (sock, from, sender, msg) => {
 
     victim.gold -= steal;
     victim.underrobuntil = user.robend;
-    user.pendinggold = (user.pendinggold || 0) + steal;
+    user.pendinggold = steal;
 
     await saveUser(target, victim);
   } else {
-    const damage = 20;
-    user.hp = Math.max(user.hp - damage, 0);
+    user.hp = Math.max(user.hp - 20, 0);
   }
 
   useLimit(user);
   await saveUser(sender, user);
 
-  return sock.sendMessage(
-    from,
-    {
-      text:
-        autoText +
-        `🕵️ Operasi dimulai...
-Target lagi dipantau...
-Tunggu ${Math.floor((user.robend - now) / 60000)} menit.
-Ketik .claim buat lihat hasilnya.`,
-    },
-    { quoted: msg },
-  );
+  let text = "";
+
+  if (auto) text += auto + "\n\n";
+
+  text += `🕵️ Operasi dimulai...
+Tunggu ${Math.floor(duration / 60000)} menit.
+Ketik .claim untuk lihat hasilnya.`;
+
+  return sock.sendMessage(from, { text }, { quoted: msg });
 };
