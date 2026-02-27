@@ -88,7 +88,6 @@ async function startBot() {
   });
 
   // MESSAGE HANDLER
-
   sock.ev.on("messages.upsert", async ({ messages }) => {
     try {
       const msg = messages[0];
