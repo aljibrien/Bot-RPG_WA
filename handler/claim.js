@@ -90,7 +90,7 @@ export default async (sock, from, sender, msg) => {
     const event = Math.random();
 
     if (event < 0.6) {
-      const baseGold = Math.floor(Math.random() * 150) + 50;
+      const baseGold = Math.floor(Math.random() * 201) + 100;
       const baseExp = 20;
 
       const gold = premium
@@ -117,7 +117,7 @@ export default async (sock, from, sender, msg) => {
       user.hp = Math.max(user.hp - damage, 0);
       message += `🏰 Kena trap!\n-HP ${damage}`;
     } else {
-      const baseGold = Math.floor(Math.random() * 300) + 200;
+      const baseGold = Math.floor(Math.random() * 201) + 500;
       const gold = premium
         ? Math.floor(baseGold * config.premiumBoost.gold)
         : baseGold;

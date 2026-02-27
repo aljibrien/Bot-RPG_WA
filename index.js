@@ -136,12 +136,18 @@ async function startBot() {
       }
 
       // LIMIT CHECK
-      if (userData) {
-        if (!isPremium(userData) && userData.limit <= 0) {
-          return sock.sendMessage(from, {
-            text: "Limit harian habis. Upgrade premium.",
-          });
-        }
+      // COMMAND YANG TIDAK PAKAI LIMIT
+      const noLimitCommands = ["me", "lb", "menu", "help", "p", "ping"];
+
+      if (
+        userData &&
+        !isPremium(userData) &&
+        userData.limit <= 0 &&
+        !noLimitCommands.includes(command)
+      ) {
+        return sock.sendMessage(from, {
+          text: "Limit harian habis. Upgrade premium.",
+        });
       }
 
       // ANTI SPAM
