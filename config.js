@@ -1,7 +1,7 @@
 const config = {
   prefix: ".",
   cooldown: {
-    rob: 1800000,
+    rob: 600000,
   },
 
   premiumBoost: {

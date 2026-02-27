@@ -1,4 +1,5 @@
 import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
+import { processClaim } from "./claim.js";
 
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
@@ -6,6 +7,20 @@ export default async (sock, from, sender, msg) => {
     return sock.sendMessage(from, {
       text: "Ketik .daftar dulu bro, jangan nyelonong.",
     });
+
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user);
+
+  if (auto) {
+    await saveUser(sender, user);
+    await sock.sendMessage(from, { text: auto }, { quoted: msg });
+  }
+
+  let autoText = "";
+
+  if (auto) {
+    autoText = auto + "\n\n";
+  }
 
   const now = Date.now();
 
@@ -81,6 +96,7 @@ export default async (sock, from, sender, msg) => {
     const steal = Math.floor(victim.gold * 0.2);
 
     victim.gold -= steal;
+    victim.underrobuntil = user.robend;
     user.pendinggold = (user.pendinggold || 0) + steal;
 
     await saveUser(target, victim);
@@ -95,8 +111,10 @@ export default async (sock, from, sender, msg) => {
   return sock.sendMessage(
     from,
     {
-      text: `🕵️ Operasi dimulai...
-Target lagi dipantau, Semoga nggak ketahuan 😏
+      text:
+        autoText +
+        `🕵️ Operasi dimulai...
+Target lagi dipantau...
 Tunggu ${Math.floor((user.robend - now) / 60000)} menit.
 Ketik .claim buat lihat hasilnya.`,
     },

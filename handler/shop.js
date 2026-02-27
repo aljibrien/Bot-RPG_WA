@@ -9,7 +9,8 @@ export default async (sock, from, sender, msg, args) => {
     });
 
   const now = Date.now();
-  const duration = 3600000;
+  const durationBodyguard = 3 * 60 * 60 * 1000; // 3 jam
+  const durationFirewall = (4 * 60 + 30) * 60 * 1000; // 4 jam 30 menit
   const item = args[1]?.toLowerCase();
 
   if (!item) {
@@ -23,8 +24,8 @@ export default async (sock, from, sender, msg, args) => {
 🏦 Bank: ${user.bank}
 
 .shop limit - 150 gold (+5 limit)
-.shop bodyguard - 350 gold (anti rob 1 jam)
-.shop firewall - 500 gold (anti hack 1 jam)
+.shop bodyguard - 250 gold (anti rob 3 jam)
+.shop firewall - 450 gold (anti hack 4 jam)
 .shop heal - 100 gold (+50 HP)
 .shop dungeon - 50 gold (reset cooldown)
 .shop worker - 10000 gold (+1 worker)`,
@@ -45,7 +46,9 @@ export default async (sock, from, sender, msg, args) => {
 
     user.gold -= 250;
     user.shielduntil =
-      user.shielduntil > now ? user.shielduntil + duration : now + duration;
+      user.shielduntil > now
+        ? user.shielduntil + durationBodyguard
+        : now + durationBodyguard;
   } else if (item === "heal") {
     if (user.gold < 100)
       return sock.sendMessage(from, { text: "Gold tidak cukup." });
@@ -68,12 +71,14 @@ export default async (sock, from, sender, msg, args) => {
     user.gold -= config.worker.price;
     user.workers += 1;
   } else if (item === "firewall") {
-    if (user.gold < 400)
+    if (user.gold < 450)
       return sock.sendMessage(from, { text: "Gold tidak cukup." });
 
-    user.gold -= 400;
+    user.gold -= 450;
     user.firewalluntil =
-      user.firewalluntil > now ? user.firewalluntil + duration : now + duration;
+      user.firewalluntil > now
+        ? user.firewalluntil + durationFirewall
+        : now + durationFirewall;
   } else {
     return sock.sendMessage(from, { text: "Item tidak ditemukan." });
   }

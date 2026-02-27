@@ -6,6 +6,7 @@ import {
   getActiveWorkers,
 } from "../utils.js";
 import config from "../config.js";
+import { processClaim } from "./claim.js";
 
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
@@ -13,6 +14,20 @@ export default async (sock, from, sender, msg) => {
     return sock.sendMessage(from, {
       text: "Ketik .daftar dulu bro, jangan nyelonong.",
     });
+
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user);
+
+  if (auto) {
+    await saveUser(sender, user);
+    await sock.sendMessage(from, { text: auto }, { quoted: msg });
+  }
+
+  let autoText = "";
+
+  if (auto) {
+    autoText = auto + "\n\n";
+  }
 
   const now = Date.now();
   const activeWorkers = getActiveWorkers(user);
@@ -90,6 +105,7 @@ export default async (sock, from, sender, msg) => {
     if (steal > 5000) steal = 5000;
 
     victim.bank -= steal;
+    victim.underhackuntil = user.hackend;
     user.pendinggold = (user.pendinggold || 0) + steal;
 
     await saveUser(target, victim);
@@ -106,7 +122,9 @@ export default async (sock, from, sender, msg) => {
   return sock.sendMessage(
     from,
     {
-      text: `💻 Hack dimulai...
+      text:
+        autoText +
+        `💻 Hack dimulai...
 Durasi ${Math.floor(duration / 60000)} menit.
 Ketik .claim setelah selesai.`,
     },

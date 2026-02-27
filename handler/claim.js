@@ -7,36 +7,22 @@ import {
 } from "../utils.js";
 import config from "../config.js";
 
-export default async (sock, from, sender, msg) => {
-  const user = await getUser(sender);
-  if (!user) {
-    return sock.sendMessage(from, {
-      text: "Ketik .daftar dulu bro, jangan nyelonong.",
-    });
-  }
-
+// ======================
+// CORE CLAIM LOGIC
+// ======================
+export async function processClaim(user) {
   const now = Date.now();
   const premium = isPremium(user);
-
   let message = "";
 
-  // ================= REST SELESAI =================
+  // ===== REST =====
   if (user.restend && user.restend <= now) {
     user.hp = getMaxHP(user);
     user.restend = 0;
     message += `🛏️ Istirahat selesai.\nHP kembali penuh.\n\n`;
   }
 
-  // Kalau masih rest
-  if (user.restend && user.restend > now) {
-    return sock.sendMessage(
-      from,
-      { text: "Kamu sedang istirahat di hospital." },
-      { quoted: msg },
-    );
-  }
-
-  // ================= 🎣 FISH CLAIM =================
+  // ===== FISH =====
   if (user.fishingend && user.fishingend <= now) {
     let chance = Math.random();
 
@@ -44,8 +30,6 @@ export default async (sock, from, sender, msg) => {
       chance -= config.premiumBoost.fishingLuck;
       if (chance < 0) chance = 0;
     }
-
-    const amount = 1;
 
     let rarity = "";
 
@@ -82,10 +66,10 @@ export default async (sock, from, sender, msg) => {
     user.fishingend = 0;
     user.lastfishing = now;
 
-    message += `🎣 ${rarity}\n+${amount} ekor\n\n`;
+    message += `🎣 ${rarity}\n+1 ekor\n\n`;
   }
 
-  // ================= 🏰 DUNGEON CLAIM =================
+  // ===== DUNGEON =====
   if (user.dungeonend && user.dungeonend <= now) {
     const event = Math.random();
 
@@ -128,52 +112,52 @@ export default async (sock, from, sender, msg) => {
 
     user.dungeonend = 0;
     user.lastdungeon = now;
-
     message += `\n\n`;
   }
 
-  // ================= 🕵️ ROB CLAIM =================
+  // ===== ROB =====
   if (user.robend && user.robend <= now) {
     if (user.pendinggold && user.pendinggold > 0) {
       user.gold += user.pendinggold;
-      message += `🕵️ Misi beres!
-Dompet target jebol 😈
-+${user.pendinggold} gold masuk kantong\n\n`;
+      message += `🕵️ Misi beres!\n+${user.pendinggold} gold\n\n`;
       user.pendinggold = 0;
     } else {
-      message += `🕵️ Ketahuan satpam!
-Kabur sambil ngos-ngosan 🏃‍♂️
-HP lu yang jadi korban 😭\n\n`;
+      message += `🕵️ Ketahuan!\nHP lu yang jadi korban 😭\n\n`;
     }
 
     user.robend = 0;
   }
 
-  // ================= 💻 HACK CLAIM =================
+  // ===== HACK =====
   if (user.hackend && user.hackend <= now) {
     if (user.pendinggold && user.pendinggold > 0) {
       user.gold += user.pendinggold;
-      message += `💻 Sistem jebol!
-Firewall nangis di pojokan 😂
-+${user.pendinggold} gold berhasil dicuri\n\n`;
+      message += `💻 Sistem jebol!\n+${user.pendinggold} gold\n\n`;
       user.pendinggold = 0;
     } else {
-      message += `💻 Akses ditolak!
-IP ke-detect, panik sendiri 🤡
-HP lu kena imbasnya\n\n`;
+      message += `💻 Akses ditolak!\nHP lu kena imbasnya\n\n`;
     }
 
     user.hackend = 0;
   }
 
-  // ================= TIDAK ADA YANG BISA DI CLAIM =================
-  if (!message) {
+  return message.trim();
+}
+
+// ======================
+// COMMAND .CLAIM
+// ======================
+export default async (sock, from, sender, msg) => {
+  const user = await getUser(sender);
+  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+
+  const result = await processClaim(user);
+
+  if (!result)
     return sock.sendMessage(from, {
-      text: "Belum ada hasil. Sabar dikit, jangan napsu amat.",
+      text: "Belum ada hasil.",
     });
-  }
 
   await saveUser(sender, user);
-
-  return sock.sendMessage(from, { text: message.trim() }, { quoted: msg });
+  return sock.sendMessage(from, { text: result }, { quoted: msg });
 };

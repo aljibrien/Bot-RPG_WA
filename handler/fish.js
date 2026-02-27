@@ -1,4 +1,5 @@
 import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
+import { processClaim } from "./claim.js";
 
 function format(ms) {
   const s = Math.ceil(ms / 1000);
@@ -13,6 +14,20 @@ export default async (sock, from, sender, msg) => {
     });
   }
 
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user);
+
+  if (auto) {
+    await saveUser(sender, user);
+    await sock.sendMessage(from, { text: auto }, { quoted: msg });
+  }
+
+  let autoText = "";
+
+  if (auto) {
+    autoText = auto + "\n\n";
+  }
+
   const now = Date.now();
   const activeWorkers = getActiveWorkers(user);
 
@@ -20,6 +35,13 @@ export default async (sock, from, sender, msg) => {
   if (user.restend && user.restend > now) {
     return sock.sendMessage(from, {
       text: "Kamu sedang istirahat di hospital. Tidak bisa mancing.",
+    });
+  }
+
+  // ================= REST SELESAI BELUM CLAIM =================
+  if (user.restend && user.restend <= now) {
+    return sock.sendMessage(from, {
+      text: "Istirahat kamu sudah selesai. Claim dulu biar HP penuh.",
     });
   }
 
@@ -53,9 +75,11 @@ export default async (sock, from, sender, msg) => {
   return sock.sendMessage(
     from,
     {
-      text: `🎣 Mulai mancing!\nDurasi ${format(
-        user.fishingend - now,
-      )}\nKetik .claim untuk ambil hasil.`,
+      text:
+        autoText +
+        `🎣 Mulai mancing!\nDurasi ${format(
+          user.fishingend - now,
+        )}\nKetik .claim untuk ambil hasil.`,
     },
     { quoted: msg },
   );

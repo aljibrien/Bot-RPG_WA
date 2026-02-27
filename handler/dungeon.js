@@ -5,6 +5,7 @@ import {
   getMaxHP,
   getActiveWorkers,
 } from "../utils.js";
+import { processClaim } from "./claim.js";
 
 function format(ms) {
   const s = Math.ceil(ms / 1000);
@@ -17,6 +18,20 @@ export default async (sock, from, sender, msg) => {
     return sock.sendMessage(from, {
       text: "Ketik .daftar dulu bro, jangan nyelonong.",
     });
+  }
+
+  // ================= AUTO CLAIM =================
+  const auto = await processClaim(user);
+
+  if (auto) {
+    await saveUser(sender, user);
+    await sock.sendMessage(from, { text: auto }, { quoted: msg });
+  }
+
+  let autoText = "";
+
+  if (auto) {
+    autoText = auto + "\n\n";
   }
 
   const now = Date.now();
@@ -85,9 +100,11 @@ export default async (sock, from, sender, msg) => {
   return sock.sendMessage(
     from,
     {
-      text: `🏰 Masuk ke dungeon!\nDurasi ${format(
-        user.dungeonend - now,
-      )}\nKetik .claim untuk ambil hasil.`,
+      text:
+        autoText +
+        `🏰 Masuk ke dungeon!\nDurasi ${format(
+          user.dungeonend - now,
+        )}\nKetik .claim untuk ambil hasil.`,
     },
     { quoted: msg },
   );

@@ -136,7 +136,18 @@ async function startBot() {
 
       // LIMIT CHECK
       // COMMAND YANG TIDAK PAKAI LIMIT
-      const noLimitCommands = ["me", "lb", "menu", "help", "p", "ping"];
+      const noLimitCommands = [
+        "me",
+        "lb",
+        "menu",
+        "help",
+        "p",
+        "ping",
+        "shop",
+        "sell",
+        "claim",
+        "addprem",
+      ];
 
       if (
         userData &&
@@ -177,7 +188,7 @@ async function startBot() {
           return fish(sock, from, sender, msg);
 
         case "dungeon":
-          return dungeon(sock, from, sender);
+          return dungeon(sock, from, sender, msg);
 
         case "rob":
           return rob(sock, from, sender, msg);
@@ -257,7 +268,8 @@ async function startBot() {
 Cara menggunakan nya itu ketik diawali titik (.) dan hilangkan kurungan []
 lalu perintahnya dibawah ini:
 
-.daftar [Nama] -> untuk daftarkan akunnya
+.daftar [Nama/default] -> untuk daftarkan akunnya (boleh kosong namanya)
+
 ──── ୨୧ Minigames ୨୧ ────
 .fish -> untuk memancing
 .dungeon -> untuk dapat gold + exp
@@ -265,12 +277,14 @@ lalu perintahnya dibawah ini:
 .rob @tag -> Mencuri gold orang lain
 .hackbank @tag -> Mencuri gold di bank orang lain
 .rest -> untuk memulihkan darah
+
 ──── ୨୧ BANK ୨୧ ────
 .deposit [berapa] -> menyimpan uang ke bank 100 misalnya
 .withdraw [berapa] -> tarik uang ke bank 100 misalnya
 .sell [tipe] [berapa] -> jual ikan kecil 10 misalnya 
 .sell all -> jual semua tipe ikan
 .shop -> membuka list shop
+
 ──── ୨୧ User ୨୧ ────
 .me -> lihat status kamu
 .setname [namaBaru] -> mengganti nama kamu

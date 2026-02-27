@@ -10,19 +10,44 @@ export default async (sock, from, sender, msg, args, type) => {
   const now = Date.now();
 
   // 🚫 Lagi aktivitas berbahaya
+
+  if (user.underrobuntil && user.underrobuntil > now) {
+    return sock.sendMessage(
+      from,
+      {
+        text: "💀 Lagi dirampok malah mau nabung? Bank lagi dikunci, sabar.",
+      },
+      { quoted: msg },
+    );
+  }
+
+  if (user.underhackuntil && user.underhackuntil > now) {
+    return sock.sendMessage(
+      from,
+      {
+        text: "🏦 ATM error: Sedang ada aktivitas mencurigakan pada akun Anda",
+      },
+      { quoted: msg },
+    );
+  }
+
   if (
     (user.robend && user.robend > now) ||
     (user.hackend && user.hackend > now)
   ) {
-    return sock.sendMessage(from, {
-      text: "Lagi ribut di lapangan, bank tutup dulu 🏦🚫",
-    });
+    return sock.sendMessage(
+      from,
+      {
+        text: "Lu lagi ribut di lapangan, ngapain ke bank mau ditangkap lu? 🏦🚫",
+      },
+      { quoted: msg },
+    );
   }
 
   const amount = parseInt(args[1]);
   if (!amount || amount <= 0)
     return sock.sendMessage(from, {
-      text: "Masukin angka yang bener dong.",
+      text: "Masukin angka yang bener dong",
     });
 
   if (type === "deposit") {
