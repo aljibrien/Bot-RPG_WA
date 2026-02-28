@@ -33,21 +33,43 @@ HP kembali penuh.\n\n`;
     let rarity;
 
     if (!premium) {
-      if (chance < 0.5) ((rarity = "Ikan kecil"), user.kecil++);
-      else if (chance < 0.8) ((rarity = "Ikan sedang"), user.sedang++);
-      else if (chance < 0.97) ((rarity = "Ikan besar"), user.besar++);
-      else ((rarity = "Ikan LEGEND ✨"), user.legend++);
+      if (chance < 0.5) {
+        rarity = "Ikan kecil";
+        user.kecil++;
+      } else if (chance < 0.8) {
+        rarity = "Ikan sedang";
+        user.sedang++;
+      } else if (chance < 0.97) {
+        rarity = "Ikan besar";
+        user.besar++;
+      } else {
+        rarity = "Ikan LEGEND ✨";
+        user.legend++;
+      }
     } else {
-      if (chance < 0.4) ((rarity = "Ikan kecil"), user.kecil++);
-      else if (chance < 0.75) ((rarity = "Ikan sedang"), user.sedang++);
-      else if (chance < 0.95) ((rarity = "Ikan besar"), user.besar++);
-      else ((rarity = "Ikan LEGEND ✨"), user.legend++);
+      if (chance < 0.4) {
+        rarity = "Ikan kecil";
+        user.kecil++;
+      } else if (chance < 0.75) {
+        rarity = "Ikan sedang";
+        user.sedang++;
+      } else if (chance < 0.95) {
+        rarity = "Ikan besar";
+        user.besar++;
+      } else {
+        rarity = "Ikan LEGEND ✨";
+        user.legend++;
+      }
     }
 
     user.fishingend = 0;
     user.lastfishing = now;
 
-    message += `🎣 ${rarity}
+    message += isAuto
+      ? `🎣 Hasil mancing sebelumnya!
+${rarity}
++1 ekor\n\n`
+      : `🎣 ${rarity}
 +1 ekor\n\n`;
   }
 
@@ -88,7 +110,10 @@ HP kembali penuh.\n\n`;
       const damage = Math.floor(Math.random() * 30) + 10;
       user.hp = Math.max(user.hp - damage, 0);
 
-      message += `🏰 Kena trap!
+      message += isAuto
+        ? `🏰 Trap sebelumnya!
+-HP ${damage}`
+        : `🏰 Kena trap!
 -HP ${damage}`;
     } else {
       const baseGold = Math.floor(Math.random() * 201) + 500;
@@ -98,7 +123,10 @@ HP kembali penuh.\n\n`;
 
       user.gold += gold;
 
-      message += `🏰 LUCKY ROOM!
+      message += isAuto
+        ? `🏰 Lucky room sebelumnya!
++${gold} gold`
+        : `🏰 LUCKY ROOM!
 +${gold} gold`;
     }
 
@@ -112,13 +140,24 @@ HP kembali penuh.\n\n`;
     if (user.pendinggold && user.pendinggold > 0) {
       user.gold += user.pendinggold;
 
-      message += `🕵️ Misi beres!
+      message += isAuto
+        ? `🕵️ Hasil rob sebelumnya!
++${user.pendinggold} gold\n\n`
+        : `🕵️ Misi beres!
 +${user.pendinggold} gold\n\n`;
 
       user.pendinggold = 0;
     } else {
-      message += `🕵️ Ketahuan!
-HP lu yang jadi korban 😭\n\n`;
+      const damage = Math.floor(Math.random() * 21) + 20; // 20 - 40
+      user.hp = Math.max(user.hp - damage, 0);
+
+      message += isAuto
+        ? `🕵️ Rob sebelumnya gagal!
+Kena gebukin warga 😭
+-HP ${damage}\n\n`
+        : `🕵️ Ketahuan!
+Kena gebukin warga 😭
+-HP ${damage}\n\n`;
     }
 
     user.robend = 0;
@@ -129,13 +168,27 @@ HP lu yang jadi korban 😭\n\n`;
     if (user.pendinggold && user.pendinggold > 0) {
       user.gold += user.pendinggold;
 
-      message += `💻 Sistem jebol!
+      message += isAuto
+        ? `💻 Hasil hack sebelumnya!
++${user.pendinggold} gold\n\n`
+        : `💻 Sistem jebol!
 +${user.pendinggold} gold\n\n`;
 
       user.pendinggold = 0;
     } else {
-      message += `💻 Akses ditolak!
-HP lu kena imbasnya\n\n`;
+      const minFine = 100;
+      const percent = Math.random() * 0.1 + 0.05; // 5% - 15%
+      const calculated = Math.floor(user.gold * percent);
+
+      const lost = Math.max(minFine, calculated);
+
+      user.gold = Math.max(user.gold - lost, 0);
+
+      message += isAuto
+        ? `💻 Hack sebelumnya gagal!
+-Gold ${lost}\n\n`
+        : `💻 Akses ditolak!
+-Gold ${lost}\n\n`;
     }
 
     user.hackend = 0;
@@ -153,10 +206,7 @@ export default async (sock, from, sender, msg) => {
 
   const result = await processClaim(user, false);
 
-  if (!result)
-    return sock.sendMessage(from, {
-      text: "Belum ada hasil.",
-    });
+  if (!result) return sock.sendMessage(from, { text: "Belum ada hasil." });
 
   await saveUser(sender, user);
 

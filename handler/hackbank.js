@@ -48,9 +48,14 @@ export default async (sock, from, sender, msg) => {
     });
 
   // ================= HP CHECK =================
-  if (user.hp < 50)
+  if (user.hp == 0)
     return sock.sendMessage(from, {
-      text: "HP minimal 50 untuk hack bank.",
+      text: "Lu sekarat ngapain hack, istirahat dulu sana",
+    });
+
+  if (user.gold < 100)
+    return sock.sendMessage(from, {
+      text: "Minimal punya 100 gold di tangan untuk hack bank.",
     });
 
   // ================= COOLDOWN =================
