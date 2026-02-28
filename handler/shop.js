@@ -9,8 +9,8 @@ export default async (sock, from, sender, msg, args) => {
     });
 
   const now = Date.now();
-  const durationBodyguard = 3 * 60 * 60 * 1000; // 3 jam
-  const durationFirewall = (4 * 60 + 30) * 60 * 1000; // 4 jam 30 menit
+  const durationBodyguard = 6 * 60 * 60 * 1000; // 6 jam
+  const durationFirewall = 8 * 60 * 60 * 1000; // 8 jam
   const item = args[1]?.toLowerCase();
 
   if (!item) {
@@ -24,8 +24,8 @@ export default async (sock, from, sender, msg, args) => {
 🏦 Bank: ${user.bank}
 
 .shop limit - 200 gold (+5 limit)
-.shop bodyguard - 250 gold (anti rob 3 jam)
-.shop firewall - 450 gold (anti hack 4 jam)
+.shop bodyguard - 250 gold (anti rob 6 jam)
+.shop firewall - 450 gold (anti hack 8 jam)
 .shop heal - 100 gold (+50 HP)
 .shop worker - 10000 gold (+1 worker)`,
       },

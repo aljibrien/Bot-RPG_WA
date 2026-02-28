@@ -176,7 +176,7 @@ Kena gebukin warga 😭
 
       user.pendinggold = 0;
     } else {
-      const minFine = 100;
+      const minFine = 150;
       const percent = Math.random() * 0.1 + 0.05; // 5% - 15%
       const calculated = Math.floor(user.gold * percent);
 

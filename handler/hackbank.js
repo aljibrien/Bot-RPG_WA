@@ -123,10 +123,6 @@ export default async (sock, from, sender, msg) => {
     user.pendinggold = steal;
 
     await saveUser(target, victim);
-  } else {
-    user.hp = Math.max(user.hp - 40, 0);
-    const fine = Math.floor(user.gold * 0.1);
-    user.gold -= fine;
   }
 
   useLimit(user);
