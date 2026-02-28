@@ -2,38 +2,39 @@ import { getUser, saveUser } from "../utils.js";
 import config from "../config.js";
 
 export default async (sock, from, sender, msg, args) => {
-  // 🔥 Hanya Owner
+  // 🔥 Owner only
   if (sender !== config.owner)
     return sock.sendMessage(
       from,
-      {
-        text: "Fitur ini khusus owner.",
-      },
+      { text: "Fitur ini khusus owner." },
       { quoted: msg },
     );
 
-  const target =
-    msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]?.split(
-      "@",
-    )[0];
-
-  if (!target)
+  if (!args[1])
     return sock.sendMessage(
       from,
-      {
-        text: "Tag target. Contoh: .addprem @tag 7",
-      },
+      { text: "Contoh: .addprem @tag 7 atau .addprem 628xxx 7" },
       { quoted: msg },
     );
 
-  // target = target.split("@")[0];
+  let jid;
+  let target;
+
+  // 🔥 Kalau pakai tag
+  if (msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.length) {
+    jid = msg.message.extendedTextMessage.contextInfo.mentionedJid[0];
+    target = jid.split("@")[0];
+  } else {
+    // 🔥 Kalau pakai nomor langsung
+    target = args[1].replace(/[^0-9]/g, "");
+    jid = target + "@s.whatsapp.net";
+  }
+
   const days = parseInt(args[2]);
   if (!days || isNaN(days))
     return sock.sendMessage(
       from,
-      {
-        text: "Masukkan jumlah hari. Contoh: .addprem @tag 7",
-      },
+      { text: "Masukkan jumlah hari. Contoh: .addprem @tag 7" },
       { quoted: msg },
     );
 
@@ -41,9 +42,7 @@ export default async (sock, from, sender, msg, args) => {
   if (!user)
     return sock.sendMessage(
       from,
-      {
-        text: "Target belum terdaftar.",
-      },
+      { text: "Target belum terdaftar." },
       { quoted: msg },
     );
 
@@ -58,8 +57,8 @@ export default async (sock, from, sender, msg, args) => {
   return sock.sendMessage(
     from,
     {
-      text: `✅ @${target.split("@")[0]} sekarang premium selama ${days} hari.`,
-      mentions: [target],
+      text: `✅ @${target} sekarang premium selama ${days} hari.`,
+      mentions: [jid],
     },
     { quoted: msg },
   );
