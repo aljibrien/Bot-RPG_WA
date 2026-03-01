@@ -32,7 +32,7 @@ import claim from "./handler/claim.js";
 import rest from "./handler/rest.js";
 import addprem from "./handler/addprem.js";
 import hackbank from "./handler/hackbank.js";
-import hackbank from "./handler/info.js";
+import info from "./handler/info.js";
 
 // EXPRESS SERVER
 
