@@ -31,24 +31,17 @@ export default async (sock, from, sender, msg) => {
     });
   }
 
+  // ================= WORKERS CHECK =================
+  if (activeWorkers >= user.workers) {
+    return sock.sendMessage(from, {
+      text: "Semua worker sedang bekerja.",
+    });
+  }
+
   // ================= LAGI DUNGEON =================
   if (user.dungeonend && user.dungeonend > now) {
     return sock.sendMessage(from, {
       text: "Masih di dungeon. Selesaikan dulu sebelum mancing.",
-    });
-  }
-
-  // ================= LAGI ROB =================
-  if (user.robend && user.robend > now) {
-    return sock.sendMessage(from, {
-      text: "Lagi operasi rob. Tunggu selesai dulu.",
-    });
-  }
-
-  // ================= LAGI HACK =================
-  if (user.hackend && user.hackend > now) {
-    return sock.sendMessage(from, {
-      text: "Lagi hack bank. Tunggu selesai dulu.",
     });
   }
 
@@ -63,13 +56,6 @@ export default async (sock, from, sender, msg) => {
   if (user.fishingend && user.fishingend > now) {
     return sock.sendMessage(from, {
       text: `Masih mancing.\nSisa ${format(user.fishingend - now)}`,
-    });
-  }
-
-  // ================= WORKERS CHECK =================
-  if (activeWorkers >= user.workers) {
-    return sock.sendMessage(from, {
-      text: "Semua worker sedang bekerja.",
     });
   }
 

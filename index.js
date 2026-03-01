@@ -55,7 +55,7 @@ async function startBot() {
     logger: P({ level: "silent" }),
     auth: state,
     version,
-    syncFullHistory: true,
+    syncFullHistory: false,
     markOnlineOnConnect: true,
     generateHighQualityLinkPreview: true,
     retryRequestDelayMs: 250,

@@ -33,7 +33,7 @@ Format:
 ⟢ sell [tipe] [jumlah]
 ⟢ sell all
 
-╚════════════════════╝`,
+╚══════════════════`,
       },
       { quoted: msg },
     );
