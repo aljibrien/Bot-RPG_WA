@@ -80,17 +80,24 @@ Benefit
       {
         text: `╔═══ 🎣 ROD INFO ═══╗
 
-Kayu → rarity +
-Phantom → rarity ++
-Tempest → rarity +++
+⟢ Kayu    → +3% Lucky
+⟢ Phantom → +6% Lucky
+⟢ Tempest → +10% Lucky
 
-Vortex → 25% 2 ikan
-Inferno → 35% 2 ikan
-Abbysal → 50% 2 ikan
+⟢ Vortex⤵
++15% Lucky / 25% 2 ikan
+⟢ Inferno⤵
++20% Lucky / 35% 2 ikan
+⟢ Abbysal⤵
++25% Lucky / 50% 2 ikan
 
-Demon → 50% 2 ikan, 15% 3 ikan
-Angel → 60% 2 ikan, 20% 3 ikan
-God → 60% 2 ikan, 30% 3 ikan, 5% 4 ikan
+⟢ Demon⤵
++30% Lucky / 50% 2 ikan / 15% 3 ikan
+⟢ Angel⤵
++30% Lucky / 60% 2 ikan / 20% 3 ikan
+⟢ God⤵
++35% Lucky / 60% 2 ikan /
+30% 3 ikan / 5% 4 ikan
 
 ╚════════════════════╝`,
       },

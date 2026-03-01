@@ -2,9 +2,9 @@ import { getUser, saveUser, useLimit } from "../utils.js";
 
 const price = {
   kecil: 10,
-  sedang: 25,
-  besar: 50,
-  legend: 200,
+  sedang: 30,
+  besar: 80,
+  legend: 400,
 };
 
 export default async (sock, from, sender, msg, args) => {
@@ -21,7 +21,7 @@ export default async (sock, from, sender, msg, args) => {
     return sock.sendMessage(
       from,
       {
-        text: `━━━ 🎣 SELL LIST ━━━
+        text: `╔═══ 🎣 SELL LIST ═══╗
 
 🐟 Harga Ikan
 ⟢ kecil  → ${price.kecil} gold
@@ -33,7 +33,7 @@ Format:
 ⟢ sell [tipe] [jumlah]
 ⟢ sell all
 
-━━━━━━━━━━━━`,
+╚════════════════════╝`,
       },
       { quoted: msg },
     );

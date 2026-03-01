@@ -102,10 +102,10 @@ HP kembali penuh.\n\n`;
       user[rarity] += 1;
 
       const expMap = {
-        kecil: 1,
-        sedang: 2,
-        besar: 3,
-        legend: 5,
+        kecil: 3,
+        sedang: 5,
+        besar: 8,
+        legend: 12,
       };
 
       totalExp += expMap[rarity] || 0;

@@ -42,7 +42,7 @@ export default async (sock, from, sender, msg) => {
   return sock.sendMessage(
     from,
     {
-      text: `━━━ 📊 PLAYER PANEL ━━━
+      text: `╔═══ 📊 PLAYER PANEL ═══╗
 
 🎖 Level : ${user.level}
 ✨ Exp   : ${user.exp}
@@ -53,21 +53,21 @@ export default async (sock, from, sender, msg) => {
 💰 Gold : ${user.gold}
 🏦 Bank : ${user.bank}
 
-🎣 Rod  : ${rodText}
+🎣 Rod : ${rodText}
 
 🐟 Ikan
-⟢ Kecil  : ${user.kecil}
+⟢ Kecil : ${user.kecil}
 ⟢ Sedang : ${user.sedang}
-⟢ Besar  : ${user.besar}
+⟢ Besar : ${user.besar}
 ⟢ Legend : ${user.legend}
-⟢ Total  : ${totalFish}
+⟢ Total : ${totalFish}
 
 🛡 Bodyguard : ${shieldText}
-🔥 Firewall  : ${firewallText}
-💎 Premium   : ${premium ? "AKTIF" : "Tidak aktif"}
-⚡ Limit     : ${premium ? "♾ Unlimited" : user.limit}
+🔥 Firewall : ${firewallText}
+💎 Premium : ${premium ? "AKTIF" : "Tidak aktif"}
+⚡ Limit : ${premium ? "♾ Unlimited" : user.limit}
 
-━━━━━━━━━━━━━━`,
+╚════════════════════╝`,
     },
     { quoted: msg },
   );
