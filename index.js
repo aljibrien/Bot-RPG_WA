@@ -240,8 +240,7 @@ async function startBot() {
 
         case "menu":
           return sock.sendMessage(from, {
-            text: `
-            ╔═══ ⚔️ RPG BOT MENU ═══╗
+            text: `╔═ ⚔️ RPG BOT MENU ═╗
 
 📌 Akun
 ⟢ .daftar
@@ -266,10 +265,10 @@ async function startBot() {
 ⟢ .give @tag
 ⟢ .lb
 
-╚════════════════════╝`,
+╚══════════════════`,
           });
 
-        case "help":
+        case "info":
           return info(sock, from, sender, msg, args);
 
         default:

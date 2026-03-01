@@ -57,7 +57,7 @@ export default async (sock, from, sender, msg, args) => {
     return sock.sendMessage(
       from,
       {
-        text: `╔═══ 👑 PREMIUM STATUS ═══╗
+        text: `╔═ 👑 PREMIUM STATUS ══
 
 Status : ${status}
 Sisa   : ${sisaText}
@@ -78,7 +78,7 @@ Benefit
     return sock.sendMessage(
       from,
       {
-        text: `╔═══ 🎣 ROD INFO ═══╗
+        text: `╔═══ 🎣 ROD INFO ════
 
 ⟢ Kayu    → +3% Lucky
 ⟢ Phantom → +6% Lucky
@@ -109,7 +109,7 @@ Benefit
     return sock.sendMessage(
       from,
       {
-        text: `╔═══ 🎮 MINIGAMES ═══╗
+        text: `╔═══ 🎮 MINIGAMES ════
 
 ⟢ .fish → memancing
 ⟢ .dungeon → lawan monster

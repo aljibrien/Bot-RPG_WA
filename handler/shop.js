@@ -24,7 +24,7 @@ export default async (sock, from, sender, msg, args) => {
     return sock.sendMessage(
       from,
       {
-        text: `╔═══ 🛒 SHOP ═══╗
+        text: `╔════ 🛒 SHOP ════
 
 💰 Gold : ${user.gold}
 🏦 Bank : ${user.bank}

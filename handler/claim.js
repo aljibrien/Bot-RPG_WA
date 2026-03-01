@@ -267,9 +267,9 @@ Kena gebukin warga 😭
 
       message += isAuto
         ? `💻 Hack sebelumnya gagal!
--Gold ${lost}\n\n`
-        : `💻 Akses ditolak!
--Gold ${lost}\n\n`;
+-${lost} gold\n\n`
+        : `💻 Akses gagal!
+-${lost} gold\n\n`;
     }
 
     user.hackend = 0;

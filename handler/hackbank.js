@@ -53,9 +53,9 @@ export default async (sock, from, sender, msg) => {
       text: "Lu sekarat ngapain hack, istirahat dulu sana",
     });
 
-  if (user.gold < 100)
+  if (user.gold < 150)
     return sock.sendMessage(from, {
-      text: "Minimal punya 100 gold di tangan untuk hack bank.",
+      text: "Minimal punya 150 gold di tangan untuk hack bank.",
     });
 
   // ================= COOLDOWN =================

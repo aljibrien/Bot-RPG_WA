@@ -10,12 +10,6 @@ export default async (sock, from, sender, msg, args) => {
       { quoted: msg },
     );
 
-  if (!user) {
-    return sock.sendMessage(from, {
-      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
-    });
-  }
-
   if (!args[1])
     return sock.sendMessage(
       from,
