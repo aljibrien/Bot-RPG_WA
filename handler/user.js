@@ -42,7 +42,7 @@ export default async (sock, from, sender, msg) => {
   return sock.sendMessage(
     from,
     {
-      text: `╔═══ 📊 STATUS ═══╗
+      text: `━━━ 📊 PLAYER PANEL ━━━
 
 🎖 Level : ${user.level}
 ✨ Exp   : ${user.exp}
@@ -67,7 +67,7 @@ export default async (sock, from, sender, msg) => {
 💎 Premium   : ${premium ? "AKTIF" : "Tidak aktif"}
 ⚡ Limit     : ${premium ? "♾ Unlimited" : user.limit}
 
-╚════════════════════╝`,
+━━━━━━━━━━━━━━`,
     },
     { quoted: msg },
   );

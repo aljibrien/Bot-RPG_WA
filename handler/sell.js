@@ -21,14 +21,19 @@ export default async (sock, from, sender, msg, args) => {
     return sock.sendMessage(
       from,
       {
-        text: `── .✦
-🎣 SELL LIST:
+        text: `━━━ 🎣 SELL LIST ━━━
 
-.sell kecil 1 (gold +${price.kecil})
-.sell sedang 1 (gold +${price.sedang})
-.sell besar 1 (gold +${price.besar})
-.sell legend 1 (gold +${price.legend})
-.sell all (jual semua ikan)`,
+🐟 Harga Ikan
+⟢ kecil  → ${price.kecil} gold
+⟢ sedang → ${price.sedang} gold
+⟢ besar  → ${price.besar} gold
+⟢ legend → ${price.legend} gold
+
+Format:
+⟢ sell [tipe] [jumlah]
+⟢ sell all
+
+━━━━━━━━━━━━`,
       },
       { quoted: msg },
     );
