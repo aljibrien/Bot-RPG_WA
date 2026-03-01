@@ -14,7 +14,7 @@ export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
     return sock.sendMessage(from, {
-      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
     });
   }
 
@@ -34,31 +34,40 @@ export default async (sock, from, sender, msg) => {
     firewallText = `AKTIF (${format(user.firewalluntil - now)})`;
   }
 
+  let rodText = "None";
+  if (user.rod) {
+    rodText = user.rod.charAt(0).toUpperCase() + user.rod.slice(1);
+  }
+
   return sock.sendMessage(
     from,
     {
-      text: `📊 Status Kamu
+      text: `╔═══ 📊 STATUS ═══╗
 
-Level: ${user.level}
-Exp: ${user.exp}
-HP: ${user.hp} / ${maxHP}
+🎖 Level : ${user.level}
+✨ Exp   : ${user.exp}
+❤️ HP    : ${user.hp} / ${maxHP}
 
-👷Worker: ${user.workers} / ${maxWorker}
+👷 Worker : ${user.workers} / ${maxWorker}
 
-💰 Gold: ${user.gold}
-🏦 Bank: ${user.bank}
+💰 Gold : ${user.gold}
+🏦 Bank : ${user.bank}
 
-🎣 Ikan:
-- Kecil: ${user.kecil}
-- Sedang: ${user.sedang}
-- Besar: ${user.besar}
-- Legend: ${user.legend}
-Total: ${totalFish}
+🎣 Rod  : ${rodText}
 
-🛡 Bodyguard: ${shieldText}
-🔥 Firewall: ${firewallText}
-💎 Premium: ${premium ? "AKTIF" : "Tidak aktif"}
-⚡ Limit: ${premium ? "♾ Unlimited" : user.limit}`,
+🐟 Ikan
+⟢ Kecil  : ${user.kecil}
+⟢ Sedang : ${user.sedang}
+⟢ Besar  : ${user.besar}
+⟢ Legend : ${user.legend}
+⟢ Total  : ${totalFish}
+
+🛡 Bodyguard : ${shieldText}
+🔥 Firewall  : ${firewallText}
+💎 Premium   : ${premium ? "AKTIF" : "Tidak aktif"}
+⚡ Limit     : ${premium ? "♾ Unlimited" : user.limit}
+
+╚════════════════════╝`,
     },
     { quoted: msg },
   );

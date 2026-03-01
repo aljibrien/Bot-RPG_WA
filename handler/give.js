@@ -15,7 +15,7 @@ export default async (sock, from, sender, msg, args) => {
 
   if (!giver)
     return sock.sendMessage(from, {
-      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
     });
   if (!receiver)
     return sock.sendMessage(from, { text: "Target belum daftar." });

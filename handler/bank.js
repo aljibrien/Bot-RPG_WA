@@ -2,10 +2,11 @@ import { getUser, saveUser, useLimit } from "../utils.js";
 
 export default async (sock, from, sender, msg, args, type) => {
   const user = await getUser(sender);
-  if (!user)
+  if (!user) {
     return sock.sendMessage(from, {
-      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
     });
+  }
 
   const now = Date.now();
 

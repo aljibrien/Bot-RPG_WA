@@ -39,6 +39,7 @@ async function registerUser(id, name) {
     firewalluntil: 0,
     pendinggold: 0,
 
+    rod: "none",
     lastfishing: 0,
     lastdungeon: 0,
     dungeonend: 0,

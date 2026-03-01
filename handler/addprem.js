@@ -6,9 +6,15 @@ export default async (sock, from, sender, msg, args) => {
   if (sender !== config.owner)
     return sock.sendMessage(
       from,
-      { text: "Fitur ini khusus owner." },
+      { text: "🚫 Akses ditolak.\nFitur ini khusus Owner." },
       { quoted: msg },
     );
+
+  if (!user) {
+    return sock.sendMessage(from, {
+      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
+    });
+  }
 
   if (!args[1])
     return sock.sendMessage(
@@ -28,6 +34,11 @@ export default async (sock, from, sender, msg, args) => {
     // 🔥 Kalau pakai nomor langsung
     target = args[1].replace(/[^0-9]/g, "");
     jid = target + "@s.whatsapp.net";
+
+    // otomatis ubah 08 jadi 62
+    // if (target.startsWith("08")) {
+    //   target = "62" + target.slice(1);
+    // }
   }
 
   const days = parseInt(args[2]);

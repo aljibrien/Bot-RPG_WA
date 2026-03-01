@@ -1,10 +1,4 @@
-import {
-  getUser,
-  saveUser,
-  useLimit,
-  getMaxHP,
-  getActiveWorkers,
-} from "../utils.js";
+import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
 import { processClaim } from "./claim.js";
 
 function format(ms) {
@@ -16,7 +10,7 @@ export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
   if (!user) {
     return sock.sendMessage(from, {
-      text: "Ketik .daftar dulu bro, jangan nyelonong.",
+      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
     });
   }
 

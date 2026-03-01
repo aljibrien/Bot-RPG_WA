@@ -116,10 +116,9 @@ async function startBot() {
       const command = args[0].slice(1).toLowerCase();
 
       // REGISTER CHECK
-
       if (command !== "daftar" && !(await isRegistered(sender))) {
         return sock.sendMessage(from, {
-          text: "Kamu belum terdaftar. Ketik .daftar dulu.",
+          text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
         });
       }
 
@@ -147,6 +146,7 @@ async function startBot() {
         "sell",
         "claim",
         "addprem",
+        "info",
       ];
 
       if (
@@ -156,7 +156,7 @@ async function startBot() {
         !noLimitCommands.includes(command)
       ) {
         return sock.sendMessage(from, {
-          text: "Limit harian habis. Upgrade premium.",
+          text: "⚠️ Limit harian kamu sudah habis.\nTunggu reset besok atau upgrade ke Premium.",
         });
       }
 
@@ -164,7 +164,7 @@ async function startBot() {
       if (userData) {
         if (now - userData.lastcommand < 1500) {
           return sock.sendMessage(from, {
-            text: "Terlalu cepat.",
+            text: "⏳ Jangan spam. Tunggu 1 detik",
           });
         }
 
@@ -184,7 +184,6 @@ async function startBot() {
           return register(sock, from, sender, msg);
 
         case "fish":
-        case "mancing":
           return fish(sock, from, sender, msg);
 
         case "dungeon":
@@ -218,7 +217,6 @@ async function startBot() {
           return claim(sock, from, sender, msg);
 
         case "rest":
-        case "hospital":
           return rest(sock, from, sender, msg);
 
         case "addprem":
@@ -241,56 +239,36 @@ async function startBot() {
 
         case "menu":
           return sock.sendMessage(from, {
-            text: `List Command:
-⚡︎ .daftar
-──── ୨୧ Minigames ୨୧ ────
-╰┈➤ .fish
-╰┈➤ .dungeon
-╰┈➤ .claim
-╰┈➤ .rob @tag
-╰┈➤ .hackbank @tag
-╰┈➤ .rest
-──── ୨୧ BANK ୨୧ ────
-╰┈➤ .deposit
-╰┈➤ .withdraw
-╰┈➤ .sell
-╰┈➤ .shop
-──── ୨୧ User ୨୧ ────
-╰┈➤ .me
-╰┈➤ .setname
-╰┈➤ .give @tag
-╰┈➤ .lb`,
+            text: `╔═══ ⚔️ RPG BOT MENU ═══╗
+
+📌 Akun
+⟢ .daftar
+
+🎮 Minigames
+⟢ .fish
+⟢ .dungeon
+⟢ .claim
+⟢ .rob @tag
+⟢ .hackbank @tag
+⟢ .rest
+
+🏦 Bank
+⟢ .deposit
+⟢ .withdraw
+⟢ .sell
+⟢ .shop
+
+👤 User
+⟢ .me
+⟢ .setname
+⟢ .give @tag
+⟢ .lb
+
+╚══════════════════════╝`,
           });
 
-        case "Help":
-          return sock.sendMessage(from, {
-            text: `List Command:
-Cara menggunakan nya itu ketik diawali titik (.) dan hilangkan kurungan []
-lalu perintahnya dibawah ini:
-
-.daftar [Nama/default] -> untuk daftarkan akunnya (boleh kosong namanya)
-
-──── ୨୧ Minigames ୨୧ ────
-.fish -> untuk memancing
-.dungeon -> untuk dapat gold + exp
-.claim -> ambil hadiah/kegiatan apapun
-.rob @tag -> Mencuri gold orang lain
-.hackbank @tag -> Mencuri gold di bank orang lain
-.rest -> untuk memulihkan darah
-
-──── ୨୧ BANK ୨୧ ────
-.deposit [berapa] -> menyimpan uang ke bank 100 misalnya
-.withdraw [berapa] -> tarik uang ke bank 100 misalnya
-.sell [tipe] [berapa] -> jual ikan kecil 10 misalnya 
-.sell all -> jual semua tipe ikan
-.shop -> membuka list shop
-
-──── ୨୧ User ୨୧ ────
-.me -> lihat status kamu
-.setname [namaBaru] -> mengganti nama kamu
-.give @tag -> kirim gold ke seseorang
-.lb -> melihat peringkat terkaya`,
-          });
+        case "help":
+          return info(sock, from, sender, msg, args);
 
         default:
           return;

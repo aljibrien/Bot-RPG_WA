@@ -23,54 +23,113 @@ HP kembali penuh.\n\n`;
 
   // ===== FISH =====
   if (user.fishingend && user.fishingend <= now) {
-    let chance = Math.random();
+    let amount = 1;
+    const rollAmount = Math.random();
 
-    if (premium) {
-      chance -= config.premiumBoost.fishingLuck;
+    // ================= BONUS JUMLAH =================
+
+    switch (user.rod) {
+      case "vortex":
+        if (rollAmount < 0.25) amount = 2;
+        break;
+
+      case "inferno":
+        if (rollAmount < 0.35) amount = 2;
+        break;
+
+      case "abbysal":
+        if (rollAmount < 0.5) amount = 2;
+        break;
+
+      case "demon":
+        if (rollAmount < 0.15) amount = 3;
+        else if (rollAmount < 0.65) amount = 2;
+        break;
+
+      case "angel":
+        if (rollAmount < 0.2) amount = 3;
+        else if (rollAmount < 0.8) amount = 2;
+        break;
+
+      case "god":
+        if (rollAmount < 0.05) amount = 4;
+        else if (rollAmount < 0.35) amount = 3;
+        else if (rollAmount < 0.95) amount = 2;
+        break;
+    }
+
+    let totalExp = 0;
+
+    let resultText = isAuto
+      ? `🎣 Hasil mancing sebelumnya!\n`
+      : `🎣 Hasil mancing!\n`;
+
+    // ================= ROLL PER IKAN =================
+    for (let i = 0; i < amount; i++) {
+      let chance = Math.random();
+
+      // ROD RARITY BOOST
+      if (user.rod === "kayu") chance -= 0.03;
+      if (user.rod === "phantom") chance -= 0.06;
+      if (user.rod === "tempest") chance -= 0.1;
+      if (user.rod === "vortex") chance -= 0.15;
+      if (user.rod === "inferno") chance -= 0.2;
+      if (user.rod === "abbysal") chance -= 0.25;
+      if (user.rod === "demon") chance -= 0.3;
+      if (user.rod === "angel") chance -= 0.3;
+      if (user.rod === "god") chance -= 0.35;
+
+      if (premium) {
+        chance -= config.premiumBoost.fishingLuck;
+      }
+
       if (chance < 0) chance = 0;
+
+      let rarity;
+
+      if (!premium) {
+        if (chance < 0.5) rarity = "kecil";
+        else if (chance < 0.8) rarity = "sedang";
+        else if (chance < 0.97) rarity = "besar";
+        else rarity = "legend";
+      } else {
+        if (chance < 0.4) rarity = "kecil";
+        else if (chance < 0.75) rarity = "sedang";
+        else if (chance < 0.95) rarity = "besar";
+        else rarity = "legend";
+      }
+
+      user[rarity] += 1;
+
+      const expMap = {
+        kecil: 1,
+        sedang: 2,
+        besar: 3,
+        legend: 5,
+      };
+
+      totalExp += expMap[rarity] || 0;
+
+      resultText += `+1 ${rarity}\n`;
     }
 
-    let rarity;
+    const finalExp = premium
+      ? Math.floor(totalExp * config.premiumBoost.exp)
+      : totalExp;
 
-    if (!premium) {
-      if (chance < 0.5) {
-        rarity = "Ikan kecil";
-        user.kecil++;
-      } else if (chance < 0.8) {
-        rarity = "Ikan sedang";
-        user.sedang++;
-      } else if (chance < 0.97) {
-        rarity = "Ikan besar";
-        user.besar++;
-      } else {
-        rarity = "Ikan LEGEND ✨";
-        user.legend++;
-      }
-    } else {
-      if (chance < 0.4) {
-        rarity = "Ikan kecil";
-        user.kecil++;
-      } else if (chance < 0.75) {
-        rarity = "Ikan sedang";
-        user.sedang++;
-      } else if (chance < 0.95) {
-        rarity = "Ikan besar";
-        user.besar++;
-      } else {
-        rarity = "Ikan LEGEND ✨";
-        user.legend++;
-      }
-    }
+    user.exp += finalExp;
+
+    const leveledUp = checkLevelUp(user);
 
     user.fishingend = 0;
     user.lastfishing = now;
 
-    message += isAuto
-      ? `🎣 Hasil mancing sebelumnya!
-${rarity}
-+1 ekor\n\n`
-      : `🎣 ${rarity}
-+1 ekor\n\n`;
+    message += `${resultText}+${finalExp} exp\n\n`;
+
+    if (leveledUp) {
+      user.hp = getMaxHP(user);
+      message += `🔥 LEVEL UP! Sekarang level ${user.level}\n\n`;
+    }
   }
 
   // ===== DUNGEON =====
@@ -79,7 +138,7 @@ ${rarity}
 
     if (event < 0.6) {
       const baseGold = Math.floor(Math.random() * 201) + 100;
-      const baseExp = 20;
+      const baseExp = 30;
 
       const gold = premium
         ? Math.floor(baseGold * config.premiumBoost.gold)
@@ -138,14 +197,25 @@ ${rarity}
   // ===== ROB =====
   if (user.robend && user.robend <= now) {
     if (user.pendinggold && user.pendinggold > 0) {
+      let expGain = 10;
+      if (premium) expGain = Math.floor(expGain * config.premiumBoost.exp);
+
       user.gold += user.pendinggold;
+      user.exp += expGain;
+      const leveledUp = checkLevelUp(user);
 
       message += isAuto
         ? `🕵️ Hasil rob sebelumnya!
-+${user.pendinggold} gold\n\n`
++${user.pendinggold} gold
++${expGain} exp\n\n`
         : `🕵️ Misi beres!
-+${user.pendinggold} gold\n\n`;
++${user.pendinggold} gold
++${expGain} exp\n\n`;
 
+      if (leveledUp) {
+        user.hp = getMaxHP(user);
+        message += `🔥 LEVEL UP! Sekarang level ${user.level}\n\n`;
+      }
       user.pendinggold = 0;
     } else {
       const damage = Math.floor(Math.random() * 21) + 20; // 20 - 40
@@ -166,14 +236,25 @@ Kena gebukin warga 😭
   // ===== HACK =====
   if (user.hackend && user.hackend <= now) {
     if (user.pendinggold && user.pendinggold > 0) {
-      user.gold += user.pendinggold;
+      let expGain = 15;
+      if (premium) expGain = Math.floor(expGain * config.premiumBoost.exp);
 
+      user.gold += user.pendinggold;
+      user.exp += expGain;
+
+      const leveledUp = checkLevelUp(user);
       message += isAuto
         ? `💻 Hasil hack sebelumnya!
-+${user.pendinggold} gold\n\n`
++${user.pendinggold} gold
++${expGain} exp\n\n`
         : `💻 Sistem jebol!
-+${user.pendinggold} gold\n\n`;
++${user.pendinggold} gold
++${expGain} exp\n\n`;
 
+      if (leveledUp) {
+        user.hp = getMaxHP(user);
+        message += `🔥 LEVEL UP! Sekarang level ${user.level}\n\n`;
+      }
       user.pendinggold = 0;
     } else {
       const minFine = 150;
@@ -202,11 +283,41 @@ Kena gebukin warga 😭
 // ======================
 export default async (sock, from, sender, msg) => {
   const user = await getUser(sender);
-  if (!user) return sock.sendMessage(from, { text: "Ketik .daftar dulu." });
+  if (!user) {
+    return sock.sendMessage(from, {
+      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
+    });
+  }
 
   const result = await processClaim(user, false);
 
-  if (!result) return sock.sendMessage(from, { text: "Belum ada hasil." });
+  if (!result) {
+    const now = Date.now();
+
+    function format(ms) {
+      const s = Math.ceil(ms / 1000);
+      return `${Math.floor(s / 60)}m ${s % 60}s`;
+    }
+
+    let text = "⏳ Belum ada hasil.\n";
+
+    if (user.fishingend && user.fishingend > now)
+      text += `🎣 Mancing: ${format(user.fishingend - now)}\n`;
+
+    if (user.dungeonend && user.dungeonend > now)
+      text += `🏰 Dungeon: ${format(user.dungeonend - now)}\n`;
+
+    if (user.robend && user.robend > now)
+      text += `🕵️ Rob: ${format(user.robend - now)}\n`;
+
+    if (user.hackend && user.hackend > now)
+      text += `💻 Hack: ${format(user.hackend - now)}\n`;
+
+    if (user.restend && user.restend > now)
+      text += `🛏 Rest: ${format(user.restend - now)}\n`;
+
+    return sock.sendMessage(from, { text }, { quoted: msg });
+  }
 
   await saveUser(sender, user);
 
