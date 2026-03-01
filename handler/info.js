@@ -13,7 +13,7 @@ export default async (sock, from, sender, msg, args) => {
     return sock.sendMessage(
       from,
       {
-        text: `━━━ 📖 INFO MENU ━━━
+        text: `╔═══ 📖 INFO MENU ═══╗
 
 👑 Premium
 ⟢ .info premium
@@ -30,7 +30,7 @@ export default async (sock, from, sender, msg, args) => {
 👤 User
 ⟢ .info user
 
-━━━━━━━━━━━━━━`,
+╚════════════════════╝`,
       },
       { quoted: msg },
     );
@@ -57,7 +57,7 @@ export default async (sock, from, sender, msg, args) => {
     return sock.sendMessage(
       from,
       {
-        text: `━━━ 👑 PREMIUM STATUS ━━━
+        text: `╔═══ 👑 PREMIUM STATUS ═══╗
 
 Status : ${status}
 Sisa   : ${sisaText}
@@ -68,7 +68,7 @@ Benefit
 ⟢ Fishing lebih hoki
 ⟢ Limit tak terbatas
 
-━━━━━━━━━━━━━━`,
+╚════════════════════╝`,
       },
       { quoted: msg },
     );
@@ -78,7 +78,7 @@ Benefit
     return sock.sendMessage(
       from,
       {
-        text: `━━━ 🎣 ROD INFO ━━━
+        text: `╔═══ 🎣 ROD INFO ═══╗
 
 Kayu → rarity +
 Phantom → rarity ++
@@ -92,7 +92,7 @@ Demon → 50% 2 ikan, 15% 3 ikan
 Angel → 60% 2 ikan, 20% 3 ikan
 God → 60% 2 ikan, 30% 3 ikan, 5% 4 ikan
 
-━━━━━━━━━━━━━━`,
+╚════════════════════╝`,
       },
       { quoted: msg },
     );
@@ -102,7 +102,7 @@ God → 60% 2 ikan, 30% 3 ikan, 5% 4 ikan
     return sock.sendMessage(
       from,
       {
-        text: `━━━ 🎮 MINIGAMES ━━━
+        text: `╔═══ 🎮 MINIGAMES ═══╗
 
 ⟢ .fish → memancing
 ⟢ .dungeon → lawan monster
@@ -111,7 +111,7 @@ God → 60% 2 ikan, 30% 3 ikan, 5% 4 ikan
 ⟢ .rest → isi HP
 ⟢ .claim → ambil reward
 
-━━━━━━━━━━━━━━`,
+╚════════════════════╝`,
       },
       { quoted: msg },
     );
@@ -121,14 +121,14 @@ God → 60% 2 ikan, 30% 3 ikan, 5% 4 ikan
     return sock.sendMessage(
       from,
       {
-        text: `━━━ 🏦 BANK ━━━
+        text: `╔═══ 🏦 BANK ═══╗
 
 ⟢ .deposit jumlah
 ⟢ .withdraw jumlah
 ⟢ .shop → beli item
 ⟢ .sell → jual ikan
 
-━━━━━━━━━━━━━━`,
+╚════════════════════╝`,
       },
       { quoted: msg },
     );
@@ -138,14 +138,14 @@ God → 60% 2 ikan, 30% 3 ikan, 5% 4 ikan
     return sock.sendMessage(
       from,
       {
-        text: `━━━ 👤 USER ━━━
+        text: `╔═══ 👤 USER ═══╗
 
 ⟢ .me → lihat status
 ⟢ .setname nama
 ⟢ .give @tag jumlah
 ⟢ .lb → leaderboard
 
-━━━━━━━━━━━━━━`,
+╚════════════════════╝`,
       },
       { quoted: msg },
     );
