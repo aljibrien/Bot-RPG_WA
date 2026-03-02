@@ -265,7 +265,7 @@ async function startBot() {
 ⟢ .give @tag
 ⟢ .lb
 
-╚══════════════════`,
+╚═════════════════`,
           });
 
         case "info":

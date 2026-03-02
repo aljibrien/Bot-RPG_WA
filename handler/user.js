@@ -67,7 +67,7 @@ export default async (sock, from, sender, msg) => {
 💎 Premium : ${premium ? "AKTIF" : "Tidak aktif"}
 ⚡ Limit : ${premium ? "♾ Unlimited" : user.limit}
 
-╚══════════════════`,
+╚══════════▣`,
     },
     { quoted: msg },
   );
