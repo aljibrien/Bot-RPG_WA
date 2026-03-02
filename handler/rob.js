@@ -1,4 +1,10 @@
-import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
+import {
+  getUser,
+  saveUser,
+  useLimit,
+  getActiveWorkers,
+  getActiveJobsText,
+} from "../utils.js";
 import { processClaim } from "./claim.js";
 
 export default async (sock, from, sender, msg) => {
@@ -23,35 +29,25 @@ export default async (sock, from, sender, msg) => {
       text: "Kamu sedang di hospital.",
     });
 
-  // ================= LAGI DUNGEON =================
-  if (user.dungeonend && user.dungeonend > now)
-    return sock.sendMessage(from, {
-      text: "Masih di dungeon.",
-    });
-
-  // ================= LAGI FISH =================
-  if (user.fishingend && user.fishingend > now)
-    return sock.sendMessage(from, {
-      text: "Masih mancing.",
-    });
-
-  // ================= LAGI HACK =================
-  if (user.hackend && user.hackend > now)
-    return sock.sendMessage(from, {
-      text: "Masih menjalankan hack.",
-    });
-
   // ================= HP CHECK =================
   if (user.hp < 30)
     return sock.sendMessage(from, {
       text: "HP minimal 30 untuk merampok.",
     });
 
-  // ================= WORKER CHECK =================
-  if (activeWorkers >= user.workers)
+  // ================= MASIH ROB =================
+  if (user.robend && user.robend > now) {
     return sock.sendMessage(from, {
-      text: "Semua worker sedang bekerja.",
+      text: `Masih rob seseorang.\nSisa ${format(user.robend - now)}`,
     });
+  }
+
+  // ================= WORKER CHECK =================
+  if (activeWorkers >= user.workers) {
+    return sock.sendMessage(from, {
+      text: getActiveJobsText(user),
+    });
+  }
 
   // ================= TARGET =================
   const target =

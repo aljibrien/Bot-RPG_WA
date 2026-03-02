@@ -1,4 +1,10 @@
-import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
+import {
+  getUser,
+  saveUser,
+  useLimit,
+  getActiveWorkers,
+  getActiveJobsText,
+} from "../utils.js";
 import { processClaim } from "./claim.js";
 
 function format(ms) {
@@ -54,7 +60,7 @@ export default async (sock, from, sender, msg) => {
   // ================= WORKERS CHECK =================
   if (activeWorkers >= user.workers) {
     return sock.sendMessage(from, {
-      text: "Semua worker sedang bekerja.",
+      text: getActiveJobsText(user),
     });
   }
 

@@ -1,4 +1,10 @@
-import { getUser, saveUser, useLimit, getActiveWorkers } from "../utils.js";
+import {
+  getUser,
+  saveUser,
+  useLimit,
+  getActiveWorkers,
+  getActiveJobsText,
+} from "../utils.js";
 import { processClaim } from "./claim.js";
 
 function format(ms) {
@@ -31,20 +37,6 @@ export default async (sock, from, sender, msg) => {
     });
   }
 
-  // ================= WORKERS CHECK =================
-  if (activeWorkers >= user.workers) {
-    return sock.sendMessage(from, {
-      text: "Semua worker sedang bekerja.",
-    });
-  }
-
-  // ================= LAGI DUNGEON =================
-  if (user.dungeonend && user.dungeonend > now) {
-    return sock.sendMessage(from, {
-      text: "Masih di dungeon. Selesaikan dulu sebelum mancing.",
-    });
-  }
-
   // ================= HP CHECK =================
   if (user.hp <= 0) {
     return sock.sendMessage(from, {
@@ -56,6 +48,13 @@ export default async (sock, from, sender, msg) => {
   if (user.fishingend && user.fishingend > now) {
     return sock.sendMessage(from, {
       text: `Masih mancing.\nSisa ${format(user.fishingend - now)}`,
+    });
+  }
+
+  // ================= WORKERS CHECK =================
+  if (activeWorkers >= user.workers) {
+    return sock.sendMessage(from, {
+      text: getActiveJobsText(user),
     });
   }
 

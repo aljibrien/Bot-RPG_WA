@@ -4,6 +4,7 @@ import {
   useLimit,
   isPremium,
   getActiveWorkers,
+  getActiveJobsText,
 } from "../utils.js";
 import config from "../config.js";
 import { processClaim } from "./claim.js";
@@ -29,24 +30,6 @@ export default async (sock, from, sender, msg) => {
       text: "Kamu sedang di hospital.",
     });
 
-  // ================= LAGI DUNGEON =================
-  if (user.dungeonend && user.dungeonend > now)
-    return sock.sendMessage(from, {
-      text: "Masih di dungeon.",
-    });
-
-  // ================= LAGI FISH =================
-  if (user.fishingend && user.fishingend > now)
-    return sock.sendMessage(from, {
-      text: "Masih mancing.",
-    });
-
-  // ================= LAGI ROB =================
-  if (user.robend && user.robend > now)
-    return sock.sendMessage(from, {
-      text: "Masih menjalankan rob.",
-    });
-
   // ================= HP CHECK =================
   if (user.hp == 0)
     return sock.sendMessage(from, {
@@ -60,10 +43,19 @@ export default async (sock, from, sender, msg) => {
 
   // ================= COOLDOWN =================
   const cooldown = config.cooldown.rob;
-  if (now - (user.lasthack || 0) < cooldown)
+  const timePassed = now - (user.lasthack || 0);
+
+  if (timePassed < cooldown) {
+    const remaining = cooldown - timePassed;
+
+    const totalSec = Math.ceil(remaining / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+
     return sock.sendMessage(from, {
-      text: "Hack masih cooldown.",
+      text: `💻 Hack masih cooldown.\nSisa ${m}m ${s}s`,
     });
+  }
 
   // ================= LEVEL CHECK =================
   if (user.level < 3)
@@ -71,11 +63,19 @@ export default async (sock, from, sender, msg) => {
       text: "Minimal level 3 untuk bisa hack bank.",
     });
 
-  // ================= WORKER CHECK =================
-  if (activeWorkers >= user.workers)
+  // ================= MASIH HACK =================
+  if (user.hackend && user.hackend > now) {
     return sock.sendMessage(from, {
-      text: "Semua worker sedang bekerja.",
+      text: `Masih Hack seseorang.\nSisa ${format(user.hackend - now)}`,
     });
+  }
+
+  // ================= WORKER CHECK =================
+  if (activeWorkers >= user.workers) {
+    return sock.sendMessage(from, {
+      text: getActiveJobsText(user),
+    });
+  }
 
   // ================= TARGET =================
   const target =

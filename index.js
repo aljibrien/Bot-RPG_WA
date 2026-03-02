@@ -122,16 +122,16 @@ async function startBot() {
       const args = text.trim().split(/\s+/);
       const command = args[0].slice(1).toLowerCase();
 
+      const userData = await getUser(sender);
+      const now = Date.now();
+      const oneDay = 86400000;
+
       // REGISTER CHECK
-      if (command !== "daftar" && !(await isRegistered(sender))) {
+      if (command !== "daftar" && !userData) {
         return sock.sendMessage(from, {
           text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
         });
       }
-
-      const userData = await getUser(sender);
-      const now = Date.now();
-      const oneDay = 86400000;
 
       // RESET LIMIT
       if (userData && now - userData.lastreset > oneDay) {

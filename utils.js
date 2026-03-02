@@ -131,6 +131,31 @@ function getActiveWorkers(user) {
   return active;
 }
 
+export function getActiveJobsText(user) {
+  const now = Date.now();
+
+  function format(ms) {
+    const s = Math.ceil(ms / 1000);
+    return `${Math.floor(s / 60)}m ${s % 60}s`;
+  }
+
+  let text = "👷 Semua worker sedang bekerja:\n\n";
+
+  if (user.fishingend && user.fishingend > now)
+    text += `🎣 Mancing: ${format(user.fishingend - now)}\n`;
+
+  if (user.dungeonend && user.dungeonend > now)
+    text += `🏰 Dungeon: ${format(user.dungeonend - now)}\n`;
+
+  if (user.robend && user.robend > now)
+    text += `🕵️ Rob: ${format(user.robend - now)}\n`;
+
+  if (user.hackend && user.hackend > now)
+    text += `💻 Hack: ${format(user.hackend - now)}\n`;
+
+  return text.trim();
+}
+
 export {
   isRegistered,
   registerUser,
