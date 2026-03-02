@@ -4,6 +4,7 @@ import {
   useLimit,
   getActiveWorkers,
   getActiveJobsText,
+  isPremium,
 } from "../utils.js";
 import { processClaim } from "./claim.js";
 
@@ -80,7 +81,13 @@ export default async (sock, from, sender, msg) => {
   const duration = 2 * 60 * 1000;
   user.robend = now + duration;
 
-  const success = Math.random() < 0.5;
+  let chance = 0.5;
+
+  if (isPremium(user)) chance += 0.1; // +10%
+
+  if (chance > 0.8) chance = 0.8; // biar gak over
+
+  const success = Math.random() < chance;
 
   if (success) {
     const steal = Math.floor(victim.gold * 0.2);

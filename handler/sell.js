@@ -38,6 +38,11 @@ Format:
       { quoted: msg },
     );
   }
+  if (user.underrobuntil && user.underrobuntil > now) {
+    return sock.sendMessage(from, {
+      text: "💀 Rumah lu lagi dibobol, ini malah belanja. Prioritas hidup lu aneh.",
+    });
+  }
 
   // Kalau mau beli, cek limit dulu
   if (!isPremium(user) && user.limit <= 0) {

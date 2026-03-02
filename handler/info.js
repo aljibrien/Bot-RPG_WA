@@ -66,6 +66,7 @@ Benefit
 ⟢ +50% Gold dungeon
 ⟢ +50% EXP dungeon
 ⟢ Fishing lebih hoki
+⟢ +10% chance rob/hack
 ⟢ Limit tak terbatas
 
 ╚══════════▣`,

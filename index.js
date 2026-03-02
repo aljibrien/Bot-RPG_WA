@@ -95,6 +95,7 @@ async function startBot() {
       if (!msg?.message) return;
       if (msg.key.fromMe) return;
       if (msg.message?.protocolMessage) return;
+      if (!msg.key.participant && !msg.key.remoteJid) return;
 
       // ⛔️ Skip pesan lama saat restart
       if (!msg.messageTimestamp) return;
@@ -103,9 +104,16 @@ async function startBot() {
       if (Date.now() - messageTime > 10000) return;
 
       const from = msg.key.remoteJid;
+      if (!from) return;
+
       const isGroup = from.endsWith("@g.us");
 
-      const sender = (msg.key.participant || msg.key.remoteJid).split("@")[0];
+      const jid = isGroup ? msg.key.participant : msg.key.remoteJid;
+
+      if (!jid) return;
+
+      // ambil nomor bersih (hapus device suffix kalau ada)
+      const sender = jid.split("@")[0].split(":")[0];
 
       // console.log("IS GROUP:", isGroup);
       // console.log("REMOTE:", msg.key.remoteJid);

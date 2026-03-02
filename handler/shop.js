@@ -14,12 +14,6 @@ export default async (sock, from, sender, msg, args) => {
   const durationFirewall = 8 * 60 * 60 * 1000; // 8 jam
   const item = args[1]?.toLowerCase();
 
-  if (user.underrobuntil && user.underrobuntil > now) {
-    return sock.sendMessage(from, {
-      text: "💀 Rumah lu lagi dibobol, ini malah belanja. Prioritas hidup lu aneh.",
-    });
-  }
-
   if (!item) {
     return sock.sendMessage(
       from,
@@ -50,6 +44,12 @@ export default async (sock, from, sender, msg, args) => {
       },
       { quoted: msg },
     );
+  }
+
+  if (user.underrobuntil && user.underrobuntil > now) {
+    return sock.sendMessage(from, {
+      text: "💀 Rumah lu lagi dibobol, ini malah belanja. Prioritas hidup lu aneh.",
+    });
   }
 
   // Kalau mau beli, cek limit dulu
