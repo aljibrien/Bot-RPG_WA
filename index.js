@@ -124,6 +124,7 @@ async function startBot() {
 
       const userData = await getUser(sender);
       const now = Date.now();
+
       const oneDay = 86400000;
 
       // REGISTER CHECK
@@ -133,11 +134,32 @@ async function startBot() {
         });
       }
 
-      // RESET LIMIT
-      if (userData && now - userData.lastreset > oneDay) {
-        if (!isPremium(userData)) userData.limit = 20;
-        userData.lastreset = now;
-        await saveUser(sender, userData);
+      // RESET LIMIT FIX 23:59
+      if (userData) {
+        const makassar = new Date(
+          new Date().toLocaleString("en-US", { timeZone: "Asia/Makassar" }),
+        );
+
+        const lastReset = new Date(userData.lastreset || 0);
+
+        // Ambil tanggal hari ini
+        const today = new Date(
+          makassar.getFullYear(),
+          makassar.getMonth(),
+          makassar.getDate(),
+          23,
+          59,
+          0,
+          0,
+        );
+
+        // Kalau sudah lewat 23:59 hari ini
+        if (makassar >= today && lastReset < today) {
+          if (!isPremium(userData)) userData.limit = 20;
+
+          userData.lastreset = makassar.getTime();
+          await saveUser(sender, userData);
+        }
       }
 
       // LIMIT CHECK
@@ -271,7 +293,7 @@ async function startBot() {
 ⟢ .give @tag
 ⟢ .lb
 
-╚═════════════════`,
+╚══════════▣`,
           });
 
         case "info":
