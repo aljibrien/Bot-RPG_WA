@@ -1,4 +1,4 @@
-import { getUser, saveUser, useLimit } from "../utils.js";
+import { getUser, saveUser, useLimit, isPremium } from "../utils.js";
 
 const price = {
   kecil: 10,
@@ -37,6 +37,13 @@ Format:
       },
       { quoted: msg },
     );
+  }
+
+  // Kalau mau beli, cek limit dulu
+  if (!isPremium(user) && user.limit <= 0) {
+    return sock.sendMessage(from, {
+      text: "⚠️ Limit kamu habis. Tidak bisa beli item.",
+    });
   }
 
   if (type === "all") {

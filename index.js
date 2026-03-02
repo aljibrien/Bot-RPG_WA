@@ -96,6 +96,12 @@ async function startBot() {
       if (msg.key.fromMe) return;
       if (msg.message?.protocolMessage) return;
 
+      // ⛔️ Skip pesan lama saat restart
+      if (!msg.messageTimestamp) return;
+
+      const messageTime = msg.messageTimestamp * 1000;
+      if (Date.now() - messageTime > 10000) return;
+
       const from = msg.key.remoteJid;
       const isGroup = from.endsWith("@g.us");
 

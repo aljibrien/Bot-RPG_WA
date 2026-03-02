@@ -1,4 +1,4 @@
-import { getUser, saveUser, useLimit } from "../utils.js";
+import { getUser, saveUser, useLimit, isPremium } from "../utils.js";
 import config from "../config.js";
 
 export default async (sock, from, sender, msg, args) => {
@@ -50,6 +50,13 @@ export default async (sock, from, sender, msg, args) => {
       },
       { quoted: msg },
     );
+  }
+
+  // Kalau mau beli, cek limit dulu
+  if (!isPremium(user) && user.limit <= 0) {
+    return sock.sendMessage(from, {
+      text: "⚠️ Limit kamu habis. Tidak bisa beli item.",
+    });
   }
 
   let successText = `Pembelian ${item} berhasil.`;
