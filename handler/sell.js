@@ -16,6 +16,7 @@ export default async (sock, from, sender, msg, args) => {
   }
 
   const type = args[1]?.toLowerCase();
+  const now = Date.now();
 
   if (!type) {
     return sock.sendMessage(
@@ -40,7 +41,7 @@ Format:
   }
   if (user.underrobuntil && user.underrobuntil > now) {
     return sock.sendMessage(from, {
-      text: "💀 Rumah lu lagi dibobol, ini malah belanja. Prioritas hidup lu aneh.",
+      text: "💀 Rumah lu lagi dibobol, ini malah pergi menjual. Prioritas hidup lu aneh.",
     });
   }
 

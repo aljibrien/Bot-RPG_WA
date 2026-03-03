@@ -44,6 +44,7 @@ export default async (sock, from, sender, msg) => {
     {
       text: `╔═══ 📊 PLAYER PANEL ═══╗
 
+👤 username : ${user.name}
 🎖 Level : ${user.level}
 ✨ Exp   : ${user.exp}
 ❤️ HP    : ${user.hp} / ${maxHP}
