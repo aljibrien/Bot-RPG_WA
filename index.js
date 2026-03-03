@@ -142,30 +142,29 @@ async function startBot() {
         });
       }
 
-      // RESET LIMIT FIX 23:59
+      // RESET LIMIT FIX 12:00
       if (userData) {
-        const makassar = new Date(
+        const nowMakassar = new Date(
           new Date().toLocaleString("en-US", { timeZone: "Asia/Makassar" }),
         );
 
         const lastReset = new Date(userData.lastreset || 0);
-
-        // Ambil tanggal hari ini
-        const today = new Date(
-          makassar.getFullYear(),
-          makassar.getMonth(),
-          makassar.getDate(),
-          23,
-          59,
+        const resetTime = new Date(
+          nowMakassar.getFullYear(),
+          nowMakassar.getMonth(),
+          nowMakassar.getDate(),
+          12, // jam 12 siang
+          0,
           0,
           0,
         );
 
-        // Kalau sudah lewat 23:59 hari ini
-        if (makassar >= today && lastReset < today) {
-          if (!isPremium(userData)) userData.limit = 20;
+        if (nowMakassar >= resetTime && lastReset < resetTime) {
+          if (!isPremium(userData)) {
+            userData.limit = 20;
+          }
 
-          userData.lastreset = makassar.getTime();
+          userData.lastreset = nowMakassar.getTime();
           await saveUser(sender, userData);
         }
       }

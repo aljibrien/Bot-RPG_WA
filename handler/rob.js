@@ -90,7 +90,8 @@ export default async (sock, from, sender, msg) => {
   const success = Math.random() < chance;
 
   if (success) {
-    const steal = Math.floor(victim.gold * 0.2);
+    const percent = Math.random() * 0.2 + 0.1;
+    const steal = Math.floor(victim.gold * percent);
 
     victim.gold -= steal;
     victim.underrobuntil = user.robend;
