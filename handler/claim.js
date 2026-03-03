@@ -196,27 +196,27 @@ HP kembali penuh.\n\n`;
 
   // ===== ROB =====
   if (user.robend && user.robend <= now) {
-    if (user.pendinggold && user.pendinggold > 0) {
+    if (user.pendingrob && user.pendingrob > 0) {
       let expGain = 10;
       if (premium) expGain = Math.floor(expGain * config.premiumBoost.exp);
 
-      user.gold += user.pendinggold;
+      user.gold += user.pendingrob;
       user.exp += expGain;
       const leveledUp = checkLevelUp(user);
 
       message += isAuto
         ? `🕵️ Hasil rob sebelumnya!
-+${user.pendinggold} gold
++${user.pendingrob} gold
 +${expGain} exp\n\n`
         : `🕵️ Misi beres!
-+${user.pendinggold} gold
++${user.pendingrob} gold
 +${expGain} exp\n\n`;
 
       if (leveledUp) {
         user.hp = getMaxHP(user);
         message += `🔥 LEVEL UP! Sekarang level ${user.level}\n\n`;
       }
-      user.pendinggold = 0;
+      user.pendingrob = 0;
     } else {
       const damage = Math.floor(Math.random() * 21) + 20; // 20 - 40
       user.hp = Math.max(user.hp - damage, 0);
@@ -235,27 +235,27 @@ Kena gebukin warga 😭
 
   // ===== HACK =====
   if (user.hackend && user.hackend <= now) {
-    if (user.pendinggold && user.pendinggold > 0) {
+    if (user.pendinghack && user.pendinghack > 0) {
       let expGain = 15;
       if (premium) expGain = Math.floor(expGain * config.premiumBoost.exp);
 
-      user.gold += user.pendinggold;
+      user.gold += user.pendinghack;
       user.exp += expGain;
 
       const leveledUp = checkLevelUp(user);
       message += isAuto
         ? `💻 Hasil hack sebelumnya!
-+${user.pendinggold} gold
++${user.pendinghack} gold
 +${expGain} exp\n\n`
         : `💻 Sistem jebol!
-+${user.pendinggold} gold
++${user.pendinghack} gold
 +${expGain} exp\n\n`;
 
       if (leveledUp) {
         user.hp = getMaxHP(user);
         message += `🔥 LEVEL UP! Sekarang level ${user.level}\n\n`;
       }
-      user.pendinggold = 0;
+      user.pendinghack = 0;
     } else {
       const minFine = 150;
       const percent = Math.random() * 0.1 + 0.05; // 5% - 15%

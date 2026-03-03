@@ -42,7 +42,7 @@ export default async (sock, from, sender, msg) => {
     });
 
   // ================= COOLDOWN =================
-  const cooldown = config.cooldown.rob;
+  const cooldown = config.cooldown.hack;
   const timePassed = now - (user.lasthack || 0);
 
   if (timePassed < cooldown) {
@@ -120,7 +120,7 @@ export default async (sock, from, sender, msg) => {
 
     victim.bank -= steal;
     victim.underhackuntil = user.hackend;
-    user.pendinggold = steal;
+    user.pendinghack = steal;
 
     await saveUser(target, victim);
   }

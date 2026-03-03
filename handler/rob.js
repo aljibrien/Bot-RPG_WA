@@ -95,7 +95,7 @@ export default async (sock, from, sender, msg) => {
 
     victim.gold -= steal;
     victim.underrobuntil = user.robend;
-    user.pendinggold = steal;
+    user.pendingrob = steal;
 
     await saveUser(target, victim);
   } else {
