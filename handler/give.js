@@ -1,22 +1,22 @@
 import { getUser, saveUser, useLimit } from "../utils.js";
 
 export default async (sock, from, sender, msg, args) => {
+  const giver = await getUser(sender);
+  if (!giver)
+    return sock.sendMessage(from, {
+      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
+    });
+
   const target =
     msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]?.split(
       "@",
     )[0];
 
-  const amount = parseInt(args[1]);
+  const amount = parseInt(args[2]);
   if (!target || !amount || amount <= 0)
-    return sock.sendMessage(from, { text: "Format: .give 100 @tag" });
+    return sock.sendMessage(from, { text: "Format: .give @tag 100" });
 
-  const giver = await getUser(sender);
   const receiver = await getUser(target);
-
-  if (!giver)
-    return sock.sendMessage(from, {
-      text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
-    });
   if (!receiver)
     return sock.sendMessage(from, { text: "Target belum daftar." });
 
@@ -34,8 +34,10 @@ export default async (sock, from, sender, msg, args) => {
   return sock.sendMessage(
     from,
     {
-      text: `Transfer ${amount} gold berhasil.`,
-      mentions: [sender, target],
+      text: `💰 Transfer berhasil!
+
+@${sender} mengirim ${amount} gold ke @${target}`,
+      mentions: [sender + "@s.whatsapp.net", target + "@s.whatsapp.net"],
     },
     { quoted: msg },
   );

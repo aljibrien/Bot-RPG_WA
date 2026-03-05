@@ -17,6 +17,21 @@ export default async (sock, from, sender, msg) => {
     });
 
   const now = Date.now();
+  // ================= COOLDOWN =================
+  const cooldown = config.cooldown.hack;
+  const timePassed = now - (user.lasthack || 0);
+
+  if (timePassed < cooldown) {
+    const remaining = cooldown - timePassed;
+
+    const totalSec = Math.ceil(remaining / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+
+    return sock.sendMessage(from, {
+      text: `💻 Hack masih cooldown.\nSisa ${m}m ${s}s`,
+    });
+  }
 
   // ================= AUTO CLAIM =================
   const auto = await processClaim(user, true);
@@ -40,22 +55,6 @@ export default async (sock, from, sender, msg) => {
     return sock.sendMessage(from, {
       text: "Minimal punya 150 gold di tangan untuk hack bank.",
     });
-
-  // ================= COOLDOWN =================
-  const cooldown = config.cooldown.hack;
-  const timePassed = now - (user.lasthack || 0);
-
-  if (timePassed < cooldown) {
-    const remaining = cooldown - timePassed;
-
-    const totalSec = Math.ceil(remaining / 1000);
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-
-    return sock.sendMessage(from, {
-      text: `💻 Hack masih cooldown.\nSisa ${m}m ${s}s`,
-    });
-  }
 
   // ================= LEVEL CHECK =================
   if (user.level < 3)

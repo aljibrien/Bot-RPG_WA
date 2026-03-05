@@ -15,8 +15,20 @@ export default async (sock, from, sender, msg) => {
       text: "⚠️ Akun belum terdaftar.\nKetik .daftar NamaAnda",
     });
   }
-
   const now = Date.now();
+
+  const cooldown = 600000; // 10 menit misalnya
+  const timePassed = now - (user.lastrob || 0);
+
+  if (timePassed < cooldown) {
+    const remaining = cooldown - timePassed;
+    const m = Math.floor(remaining / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+
+    return sock.sendMessage(from, {
+      text: `Rob masih cooldown.\nSisa ${m}m ${s}s`,
+    });
+  }
 
   // ================= AUTO CLAIM =================
   const auto = await processClaim(user, true);
