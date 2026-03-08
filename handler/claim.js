@@ -69,21 +69,25 @@ HP kembali penuh.\n\n`;
       let chance = Math.random();
 
       // ROD RARITY BOOST
-      if (user.rod === "kayu") chance -= 0.03;
-      if (user.rod === "phantom") chance -= 0.06;
-      if (user.rod === "tempest") chance -= 0.1;
-      if (user.rod === "vortex") chance -= 0.15;
-      if (user.rod === "inferno") chance -= 0.2;
-      if (user.rod === "abbysal") chance -= 0.25;
-      if (user.rod === "demon") chance -= 0.3;
-      if (user.rod === "angel") chance -= 0.3;
-      if (user.rod === "god") chance -= 0.35;
+      const rodLuck = {
+        kayu: 0.03,
+        phantom: 0.06,
+        tempest: 0.1,
+        vortex: 0.15,
+        inferno: 0.2,
+        abbysal: 0.25,
+        demon: 0.3,
+        angel: 0.3,
+        god: 0.35,
+      };
+
+      chance += rodLuck[user.rod] || 0;
 
       if (premium) {
-        chance -= config.premiumBoost.fishingLuck;
+        chance += config.premiumBoost.fishingLuck;
       }
 
-      if (chance < 0) chance = 0;
+      if (chance > 1) chance = 1;
 
       let rarity;
 
